@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Interactive Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Modern Font Stack */
+        @import url('https://fonts.cdnfonts.com/css/aptos');
+        
+        body {
+            font-family: 'Aptos', 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .glass-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease-out;
+        }
+
+        .glass-card:active {
+            transform: scale(0.98);
+            background: #f1f5f9;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .section-title::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            background: #f1f5f9;
+        }
+
+        .card-title {
+            font-size: 11px;
+            line-height: 1.1;
+            font-weight: 600;
+            color: #1e293b;
+        }
+    </style>
+</head>
+<body class="p-3 pt-2">
+
+    <main class="w-full max-w-md mx-auto flex-grow">
+        <!-- Compact Header -->
+        <header class="flex items-center justify-center gap-3 mb-2 py-2 border-b border-slate-100">
+            <div class="bg-blue-600 p-1.5 rounded-lg text-white">
+                <i data-lucide="beaker" size="18"></i>
+            </div>
+            <div class="text-left">
+                <h1 class="text-lg font-bold text-slate-800 leading-none">Mr Leong's A* Chemistry Hub</h1>
+                <p class="text-[10px] text-slate-400 font-medium">Interactive Learning Modules</p>
+            </div>
+        </header>
+
+        <!-- BONDING SECTION -->
+        <div class="section-title">Bonding & Fundamentals</div>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="https://alaricleong.github.io/chemformula/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-emerald-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="binary" size="14"></i>
+                </div>
+                <span class="card-title">Formulae</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemdotcrossionic/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-cyan-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="circle-dot" size="14"></i>
+                </div>
+                <span class="card-title">Ionic D/C</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemdotcrosscovalent/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-sky-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="share-2" size="14"></i>
+                </div>
+                <span class="card-title">Covalent D/C</span>
+            </a>
+        </div>
+
+        <!-- KINETICS & METALS SECTION -->
+        <div class="section-title">Kinetics & Metals</div>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="https://alaricleong.github.io/chemkineticslab/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-orange-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="timer" size="14"></i>
+                </div>
+                <span class="card-title">Kinetics</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemmetallayer/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-slate-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="layers" size="14"></i>
+                </div>
+                <span class="card-title">Metal Layer</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemmetaldisplacement/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-zinc-600 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="arrow-left-right" size="14"></i>
+                </div>
+                <span class="card-title">Displacement</span>
+            </a>
+        </div>
+
+        <!-- ELECTROCHEMISTRY & PERIODIC TABLE SECTION -->
+        <div class="section-title">Electrochemistry & Periodic Table</div>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="https://alaricleong.github.io/chemelectro/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-indigo-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="zap" size="14"></i>
+                </div>
+                <span class="card-title">Electrolytic</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemsimplecell/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-yellow-600 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="battery-charging" size="14"></i>
+                </div>
+                <span class="card-title">Simple Cell</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemptable/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-blue-600 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="layout-grid" size="14"></i>
+                </div>
+                <span class="card-title">P. Table</span>
+            </a>
+        </div>
+
+        <!-- ADMIN SECTION -->
+        <div class="section-title">Admin & Resources</div>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="https://for.edu.sg/mrleongschemistry" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-purple-600 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="globe" size="14"></i>
+                </div>
+                <span class="card-title">Full Site</span>
+            </a>
+            <a href="https://for.edu.sg/mrleongchemconsult" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-rose-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="calendar" size="14"></i>
+                </div>
+                <span class="card-title">Booking</span>
+            </a>
+            <a href="https://docs.google.com/spreadsheets/d/1ftRho5SbsHnphLBzwynh13-5WMULwyZ0TkmSQ4pNJUU/edit" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-amber-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="map" size="14"></i>
+                </div>
+                <span class="card-title">Game Plan</span>
+            </a>
+        </div>
+    </main>
+
+    <!-- Tiny Footer -->
+    <footer class="mt-4 pb-2 text-center">
+        <p class="text-slate-400 text-[9px] tracking-widest uppercase">
+            &copy; 2026 MR LEONG'S A* CHEMISTRY
+        </p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
