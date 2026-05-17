@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>Chemistry Interactive Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -18,16 +18,18 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            -webkit-text-size-adjust: 100%; /* Prevents font-size adjustments after orientation changes on iOS */
         }
 
         .glass-card {
             background: white;
             border: 1px solid #e2e8f0;
             transition: all 0.2s ease-out;
+            touch-action: manipulation; /* Optimizes mobile tap delay */
         }
 
         .glass-card:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
             background: #f1f5f9;
         }
 
@@ -73,6 +75,15 @@
         .chat-scroll::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 2px;
+        }
+
+        /* Prevents horizontal scrolling on tiny displays */
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
@@ -231,17 +242,17 @@
             </div>
         </div>
 
-        <!-- Quick Suggestions Chips -->
+        <!-- Quick Suggestions Chips (Scrollable list optimized to hide scrollbar) -->
         <div class="px-3 py-2 bg-slate-50/50 border-t border-slate-100 overflow-x-auto whitespace-nowrap flex gap-1.5 scrollbar-none">
-            <button onclick="quickAsk('Explain the bonding in an ionic lattice.')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100">Ionic Lattice</button>
-            <button onclick="quickAsk('How does temperature affect kinetics?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100">Temp & Kinetics</button>
-            <button onclick="quickAsk('What happens at the anode in electrolysis?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100">Electrolysis Anode</button>
+            <button onclick="quickAsk('Explain the bonding in an ionic lattice.')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Ionic Lattice</button>
+            <button onclick="quickAsk('How does temperature affect kinetics?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Temp & Kinetics</button>
+            <button onclick="quickAsk('What happens at the anode in electrolysis?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Electrolysis Anode</button>
         </div>
 
-        <!-- Chat Input Field -->
+        <!-- Chat Input Field (Using text-base (16px) to avoid browser scaling during keyboard focus) -->
         <div class="p-3 border-t border-slate-100 bg-white flex gap-2">
-            <input id="chat-input" type="text" placeholder="Ask AI Mr Leong..." onkeydown="handleKeyDown(event)" class="flex-grow border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-50 text-slate-800">
-            <button onclick="sendMessage()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:scale-95 text-white p-2.5 rounded-xl transition-all shadow-md shadow-purple-100">
+            <input id="chat-input" type="text" placeholder="Ask AI Mr Leong..." onkeydown="handleKeyDown(event)" class="flex-grow border border-slate-200 rounded-xl px-3 py-2 text-[16px] md:text-xs focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-50 text-slate-800">
+            <button onclick="sendMessage()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:scale-95 text-white p-2.5 rounded-xl transition-all shadow-md shadow-purple-100 flex items-center justify-center">
                 <i data-lucide="send" size="16"></i>
             </button>
         </div>
@@ -395,7 +406,7 @@
                     <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5">
                         <span class="text-[9px] font-bold">L</span>
                     </div>
-                    <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed font-sans">
+                    <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed font-sans font-medium">
                         ${formattedText}
                     </div>
                 `;
