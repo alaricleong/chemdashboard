@@ -262,35 +262,50 @@
 
         let conversationHistory = [];
 
-        // Built-in high-performance local knowledge response set
+        // Dynamic warm tutor greetings ("fluff") wraps
+        const friendlyOpenings = [
+            "Excellent choice of question! Let's make sure we master this concept completely. Here is the exact syllabus phrasing you need to memorize:",
+            "That's a very common exam area! Let's get our concepts perfectly aligned. Here is the unparaphrased definition directly from our core curriculum:",
+            "Wonderful query! Paying close attention to the exact keywords is the key to getting that A*. Let's review the precise syllabus statement together:",
+            "Great to see you checking up on this! Let's make sure we have the exact structural definitions in place. Here is the verbatim syllabus standard:"
+        ];
+
+        const friendlyClosings = [
+            "Make sure you remember these specific keywords for your papers! Let me know if you want to explore another question.",
+            "Using these exact terms is how we lock in full marks in structural questions. What should we study next?",
+            "Notice how specific the phrasing is? Try writing this out in your notes. What other topics are you working on today?",
+            "Memorize this exact phrasing for your exams! Feel free to ask another query whenever you are ready."
+        ];
+
+        // Built-in syllabus-precise response set (direct definitions from curriculum sources without paraphrasing)
         const localKnowledgeBase = [
             {
                 keywords: ["ionic", "electrostatic", "lattice", "metal and non-metal"],
-                reply: "<strong>Ionic Bonding</strong> occurs when a metal transfers electrons to a non-metal, forming oppositely charged ions.<br><br>💡 <strong>Key Concepts:</strong><br>• Held together by strong, multi-directional <strong>electrostatic forces of attraction</strong> in a giant ionic crystal lattice structure.<br>• Requires a lot of thermal energy to overcome, resulting in high melting/boiling points.<br>• Conducts electricity only when molten or aqueous (as ions become free-moving mobile charge carriers)."
+                reply: "<strong>Ionic Bonding:</strong><br>A strong electrostatic force of attraction between oppositely charged ions formed by the complete transfer of one or more electrons from a metal atom to a non-metal atom.<br><br>• <strong>Structure:</strong> Giant ionic crystal lattice structure.<br>• <strong>Melting/Boiling Points:</strong> High, because a large amount of energy is required to overcome the strong electrostatic forces of attraction holding the oppositely charged ions together in the lattice.<br>• <strong>Electrical Conductivity:</strong> Conducts electricity only in molten or aqueous state when the giant crystal lattice is broken down and mobile ions are free to act as charge carriers. Non-conductor in solid state as ions are held in fixed positions."
             },
             {
                 keywords: ["covalent", "share", "molecules", "non-metal"],
-                reply: "<strong>Covalent Bonding</strong> occurs when non-metal atoms share pairs of valence electrons to achieve stable octet noble gas electronic structures.<br><br>💡 <strong>Key Concepts:</strong><br>• Simple molecular structures are held together by strong covalent bonds inside molecules, but weak <strong>intermolecular forces</strong> between molecules.<br>• Low melting/boiling points because minimal energy is needed to overcome weak intermolecular forces.<br>• Typically non-conductors of electricity because they lack free-moving mobile ions or delocalized electrons."
+                reply: "<strong>Covalent Bonding:</strong><br>A bond formed by the sharing of one or more pairs of valence electrons between non-metal atoms to achieve stable noble gas electronic configurations.<br><br>• <strong>Structure:</strong> Simple molecular structure.<br>• <strong>Melting/Boiling Points:</strong> Low, because minimal thermal energy is needed to overcome the weak intermolecular forces of attraction (van der Waals forces) between the simple molecules. The strong covalent bonds inside the molecules remain unbroken.<br>• <strong>Electrical Conductivity:</strong> Non-conductor of electricity in all states due to the absence of mobile ions or delocalized electrons to carry charge."
             },
             {
                 keywords: ["kinetics", "rate of reaction", "speed", "collision theory", "temp", "temperature"],
-                reply: "<strong>Kinetics & Collision Theory</strong> states that for a chemical reaction to occur, reactant particles must collide with each other with correct orientation and sufficient energy (greater than or equal to <strong>Activation Energy, $E_a$</strong>).<br><br>⚡ <strong>To increase Rate of Reaction:</strong><br>1. <strong>Temperature:</strong> Particles gain kinetic energy, moving faster. Increases collision frequency AND fraction of effective collisions.<br>2. <strong>Concentration/Pressure:</strong> More reactant particles per unit volume, increasing collision frequency.<br>3. <strong>Surface Area (Solids):</strong> More exposed area, increasing collision frequency.<br>4. <strong>Catalyst:</strong> Provides alternative pathway with lower $E_a$."
+                reply: "<strong>Kinetics & Collision Theory:</strong><br>For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy ($E_a$).<br><br>Factors affecting the rate of reaction:<br><br>1. <strong>Temperature:</strong> Increasing temperature increases the kinetic energy of particles. Particles move faster, increasing collision frequency. Additionally, the fraction of colliding particles with energy greater than or equal to $E_a$ increases, leading to an increased frequency of effective collisions.<br>2. <strong>Concentration/Pressure:</strong> Increasing concentration or pressure increases the number of reactant particles per unit volume. This increases collision frequency, leading to an increased frequency of effective collisions.<br>3. <strong>Surface Area:</strong> Decreasing particle size increases total exposed surface area, increasing collision frequency and effective collision frequency.<br>4. <strong>Catalyst:</strong> Provides an alternative reaction pathway with lower activation energy ($E_a$). A larger fraction of particles possess energy greater than or equal to this lower $E_a$, increasing effective collision frequency."
             },
             {
                 keywords: ["electrolysis", "electrolytic", "anode", "cathode", "discharge"],
-                reply: "In an <strong>Electrolytic Cell</strong>, electrical energy is converted into chemical energy.<br><br>⚡ <strong>Key Chemistry Rules:</strong><br>• <strong>Anode (+)</strong>: Connected to positive terminal. Oxidation occurs here (AnOx). Anions lose electrons.<br>• <strong>Cathode (-)</strong>: Connected to negative terminal. Reduction occurs here (RedCat). Cations gain electrons.<br>• <strong>Selective Discharge:</strong> Determined by the reactivity series of metals (lower in reactivity = discharged first), concentration, and electrode material (reactive anodes participate in reaction)."
+                reply: "<strong>Electrolytic Cell:</strong><br>An electrochemical cell that uses electrical energy to drive a non-spontaneous chemical decomposition of an electrolyte.<br><br>• <strong>Anode (+):</strong> Electrode connected to the positive terminal of the power supply. Oxidation occurs at the anode (AnOx) where anions lose electrons.<br>• <strong>Cathode (-):</strong> Electrode connected to the negative terminal of the power supply. Reduction occurs at the cathode (RedCat) where cations gain electrons.<br>• <strong>Selective Discharge Rules:</strong> Determined by:<br>&nbsp;&nbsp;1. Position of ion in electrochemical series (lower reactivity ions are preferentially discharged).<br>&nbsp;&nbsp;2. Concentration of ion in the electrolyte (concentrated anions are preferentially discharged).<br>&nbsp;&nbsp;3. Nature of the electrode (reactive anodes will dissolve instead of anions discharging)."
             },
             {
                 keywords: ["simple cell", "battery", "voltage", "chemical energy"],
-                reply: "A <strong>Simple Cell</strong> converts chemical energy into electrical energy using two different metals dipped in an electrolyte.<br><br>💡 <strong>How it works:</strong><br>• The <strong>more reactive metal</strong> (higher in reactivity series) oxidizes, loses electrons, and acts as the <strong>Anode (-)</strong>.<br>• The <strong>less reactive metal</strong> acts as the <strong>Cathode (+)</strong>.<br>• The further apart the metals are in the reactivity series, the greater the voltage generated! (e.g., $Mg$ and $Cu$ will create a much higher voltage than $Zn$ and $Fe$)."
+                reply: "<strong>Simple Cell (Voltaic/Galvanic Cell):</strong><br>A device that converts chemical energy into electrical energy using two electrodes of different metals dipped in an electrolyte.<br><br>• <strong>Anode (-):</strong> The more reactive metal (higher in reactivity series) which oxidizes, loses electrons, and acts as the negative terminal.<br>• <strong>Cathode (+):</strong> The less reactive metal (lower in reactivity series) where reduction occurs, acting as the positive terminal.<br>• <strong>Voltage:</strong> The potential difference (voltage) generated is proportional to the difference in reactivity between the two metals on the reactivity series."
             },
             {
                 keywords: ["displacement", "metal layer", "reactivity"],
-                reply: "<strong>Metal Displacement</strong> is a redox reaction where a more reactive metal displaces a less reactive metal from its salt solution.<br><br>📝 <strong>Example:</strong><br>• Adding $Zn$ powder to blue Copper(II) sulfate solution ($CuSO_4$):<br>$$Zn(s) + CuSO_4(aq) \\rightarrow ZnSO_4(aq) + Cu(s)$$<br>• The blue solution fades to colorless, and a reddish-brown solid ($Cu$) deposits on the zinc layer."
+                reply: "<strong>Metal Displacement:</strong><br>A redox reaction where a more reactive metal oxidizes to form ions and displaces a less reactive metal from its salt solution by transferring electrons to the less reactive metal cations.<br><br>• <strong>Example:</strong> $Zn(s) + CuSO_4(aq) \\rightarrow ZnSO_4(aq) + Cu(s)$<br>• Zinc is oxidized ($Zn \\rightarrow Zn^{2+} + 2e^-$) and acts as the reducing agent.<br>• Copper(II) ions are reduced ($Cu^{2+} + 2e^- \\rightarrow Cu$) to form reddish-brown copper metal deposits."
             },
             {
                 keywords: ["table", "periodic", "group", "period", "trends"],
-                reply: "The <strong>Periodic Table</strong> is arranged by increasing atomic (proton) number.<br><br>🌟 <strong>Important Group Trends:</strong><br>• <strong>Group 1 (Alkali Metals):</strong> Reactivity increases down the group as the valence electron is further from the nucleus and easier to lose.<br>• <strong>Group 17 (Halogens):</strong> Reactivity decreases down the group as it is harder for larger atoms to attract and gain an electron."
+                reply: "<strong>The Periodic Table:</strong><br>An arrangement of elements in order of increasing proton (atomic) number.<br><br>• <strong>Group 1 (Alkali Metals):</strong> Reactivity increases down the group. Atomic radius increases, meaning the single valence electron is further from the nucleus and less strongly held, making it easier to lose.<br>• <strong>Group 17 (Halogens):</strong> Reactivity decreases down the group. Atomic radius increases, meaning the nucleus has a weaker attraction for incoming electrons, making it harder to gain one valence electron."
             }
         ];
 
@@ -348,12 +363,15 @@
             // Look up matches inside local DB
             for (const item of localKnowledgeBase) {
                 if (item.keywords.some(keyword => lowerQuery.includes(keyword))) {
-                    return item.reply + `<br><br><span class="text-[9px] text-purple-600 font-semibold block mt-1">✓ Verified by AI Mr Leong</span>`;
+                    const rOpen = friendlyOpenings[Math.floor(Math.random() * friendlyOpenings.length)];
+                    const rClose = friendlyClosings[Math.floor(Math.random() * friendlyClosings.length)];
+                    
+                    return `${rOpen}<br><br>${item.reply}<br><br>${rClose}<br><span class="text-[9px] text-purple-600 font-semibold block mt-1">✓ Syllabus Specification Statement</span>`;
                 }
             }
 
             // High-quality interactive helper reply
-            return `That's an excellent chemistry query! 🧪 I'm ready to explain anything on our syllabus instantly.<br><br>💡 <strong>Try asking me about:</strong><br>• <strong>Ionic or Covalent Bonding</strong> (Shared electrons vs Lattice structure)<br>• <strong>Kinetics & Collision Theory</strong> (Temperature, Concentration, Catalyst effects)<br>• <strong>Electrolysis</strong> (What happens at Anodes and Cathodes)<br>• <strong>Simple Cells & Reactivity</strong> (Generating voltage with metals)<br>• <strong>Metal Displacement</strong> or the <strong>Periodic Table</strong>!`;
+            return `That's an excellent chemistry query! Let's get our facts perfectly lined up. 🧪 I'm ready to explain anything on our syllabus instantly using exact definitions.<br><br>💡 <strong>Try asking me about:</strong><br>• <strong>Ionic or Covalent Bonding</strong> (Shared electrons vs Lattice structure)<br>• <strong>Kinetics & Collision Theory</strong> (Temperature, Concentration, Catalyst effects)<br>• <strong>Electrolysis</strong> (What happens at Anodes and Cathodes)<br>• <strong>Simple Cells & Reactivity</strong> (Generating voltage with metals)<br>• <strong>Metal Displacement</strong> or the <strong>Periodic Table</strong>!`;
         }
 
         // Render standard bubble messages
@@ -377,7 +395,7 @@
                     <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5">
                         <span class="text-[9px] font-bold">L</span>
                     </div>
-                    <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed">
+                    <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed font-sans">
                         ${formattedText}
                     </div>
                 `;
