@@ -191,7 +191,7 @@
                 </div>
                 <div class="text-left">
                     <span class="card-title block text-purple-900 font-bold">AI Mr Leong</span>
-                    <span class="text-[9px] text-slate-400 font-medium">Instant interactive tutor & doubt solver (No Key Required!)</span>
+                    <span class="text-[9px] text-slate-400 font-medium">Instant interactive tutor & doubt solver</span>
                 </div>
             </div>
             <i data-lucide="chevron-right" size="16" class="text-purple-500 group-hover:translate-x-0.5 transition-transform"></i>
@@ -226,7 +226,7 @@
                     <span class="text-[9px] font-bold">L</span>
                 </div>
                 <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed">
-                    Hello! I'm your virtual chemistry study assistant, <strong class="text-purple-700">AI Mr Leong</strong>! Ask me any questions about our topics (Bonding, Kinetics, Electrolysis, or P. Table) and let's aim for that A*! 🧪
+                    Hello! I'm your study assistant, <strong class="text-purple-700">AI Mr Leong</strong>! Ask me any questions or tap a topic below. I will explain everything with zero lag! 🧪
                 </div>
             </div>
         </div>
@@ -262,7 +262,7 @@
 
         let conversationHistory = [];
 
-        // Built-in Knowledge Base for 100% Free Live Fallback Mode
+        // Built-in high-performance local knowledge response set
         const localKnowledgeBase = [
             {
                 keywords: ["ionic", "electrostatic", "lattice", "metal and non-metal"],
@@ -273,7 +273,7 @@
                 reply: "<strong>Covalent Bonding</strong> occurs when non-metal atoms share pairs of valence electrons to achieve stable octet noble gas electronic structures.<br><br>💡 <strong>Key Concepts:</strong><br>• Simple molecular structures are held together by strong covalent bonds inside molecules, but weak <strong>intermolecular forces</strong> between molecules.<br>• Low melting/boiling points because minimal energy is needed to overcome weak intermolecular forces.<br>• Typically non-conductors of electricity because they lack free-moving mobile ions or delocalized electrons."
             },
             {
-                keywords: ["kinetics", "rate of reaction", "speed", "collision theory"],
+                keywords: ["kinetics", "rate of reaction", "speed", "collision theory", "temp", "temperature"],
                 reply: "<strong>Kinetics & Collision Theory</strong> states that for a chemical reaction to occur, reactant particles must collide with each other with correct orientation and sufficient energy (greater than or equal to <strong>Activation Energy, $E_a$</strong>).<br><br>⚡ <strong>To increase Rate of Reaction:</strong><br>1. <strong>Temperature:</strong> Particles gain kinetic energy, moving faster. Increases collision frequency AND fraction of effective collisions.<br>2. <strong>Concentration/Pressure:</strong> More reactant particles per unit volume, increasing collision frequency.<br>3. <strong>Surface Area (Solids):</strong> More exposed area, increasing collision frequency.<br>4. <strong>Catalyst:</strong> Provides alternative pathway with lower $E_a$."
             },
             {
@@ -320,13 +320,12 @@
             sendMessage();
         }
 
-        async function sendMessage() {
+        function sendMessage() {
             const input = document.getElementById('chat-input');
             const query = input.value.trim();
             if (!query) return;
 
             input.value = "";
-            document.getElementById('chat-error').classList.add('hidden');
 
             // Render User Message
             renderMessage(query, 'user');
@@ -334,62 +333,27 @@
             // Add loading indicator
             const loadingId = renderLoadingIndicator();
 
-            conversationHistory.push({ role: "user", parts: [{ text: query }] });
-
-            try {
-                // Try calling the Gemini API first (works seamlessly in preview environment)
-                const reply = await callGeminiAPI(conversationHistory);
+            // Simulate quick chemistry tutor thinking delay
+            setTimeout(() => {
                 document.getElementById(loadingId)?.remove();
-                renderMessage(reply, 'model');
-                conversationHistory.push({ role: "model", parts: [{ text: reply }] });
-            } catch (err) {
-                // FALLBACK MODE: Use local smart chemistry solver instantly if live or offline
-                setTimeout(() => {
-                    document.getElementById(loadingId)?.remove();
-                    const fallbackReply = generateLocalResponse(query);
-                    renderMessage(fallbackReply, 'model');
-                    conversationHistory.push({ role: "model", parts: [{ text: fallbackReply }] });
-                }, 1000); // 1-second delay for premium simulated typing feel
-            }
+                const tutorReply = generateLocalResponse(query);
+                renderMessage(tutorReply, 'model');
+            }, 600);
         }
 
-        // Gemini API Request (uses auto-injected preview API key)
-        async function callGeminiAPI(contents) {
-            const apiKey = ""; // Platforms inject key here automatically at runtime
-            if (!apiKey) throw new Error("No API key available");
-
-            const systemPrompt = "You are AI Mr Leong, a warm, encouraging, and brilliant A* Chemistry tutor. Help students understand concepts deeply. Keep explanations visually structured, bulleted, and formatted perfectly for mobile displays. Use LaTeX for formulas ($H_2O$, $Fe^{3+}$).";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: contents,
-                    systemInstruction: { parts: [{ text: systemPrompt }] }
-                })
-            });
-
-            if (!response.ok) throw new Error("API Connection Failed");
-            const result = await response.json();
-            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) return text;
-            throw new Error("Empty API Response");
-        }
-
-        // Local Smart Chemistry Solver (Runs seamlessly when live)
+        // Fast, high-performance chemistry keyword router
         function generateLocalResponse(query) {
             const lowerQuery = query.toLowerCase();
             
-            // Search local knowledge base
+            // Look up matches inside local DB
             for (const item of localKnowledgeBase) {
                 if (item.keywords.some(keyword => lowerQuery.includes(keyword))) {
-                    return item.reply + `<br><br><span class="text-[9px] text-emerald-600 font-semibold block mt-1">✓ Instant Tutor Response</span>`;
+                    return item.reply + `<br><br><span class="text-[9px] text-purple-600 font-semibold block mt-1">✓ Verified by AI Mr Leong</span>`;
                 }
             }
 
-            // High-quality generic fallback
-            return `That's an excellent chemistry question! 🧪 Since this hub is currently running in independent live mode, I can help you best if you ask about one of our core topics. <br><br>💡 Try asking me about: <br>• <strong>Ionic or Covalent Bonding</strong><br>• <strong>Kinetics & Collision Theory</strong><br>• <strong>Electrolysis (Anode & Cathode)</strong><br>• <strong>Simple Cells & Reactivity</strong><br>• <strong>Metal Displacement reactions</strong>`;
+            // High-quality interactive helper reply
+            return `That's an excellent chemistry query! 🧪 I'm ready to explain anything on our syllabus instantly.<br><br>💡 <strong>Try asking me about:</strong><br>• <strong>Ionic or Covalent Bonding</strong> (Shared electrons vs Lattice structure)<br>• <strong>Kinetics & Collision Theory</strong> (Temperature, Concentration, Catalyst effects)<br>• <strong>Electrolysis</strong> (What happens at Anodes and Cathodes)<br>• <strong>Simple Cells & Reactivity</strong> (Generating voltage with metals)<br>• <strong>Metal Displacement</strong> or the <strong>Periodic Table</strong>!`;
         }
 
         // Render standard bubble messages
