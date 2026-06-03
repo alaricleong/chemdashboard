@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>Chemistry Interactive Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest" crossorigin="anonymous"></script>
+    
+    <!-- KaTeX for Beautiful LaTeX Chemistry Formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
     <style>
         /* Modern Font Stack */
         @import url('https://fonts.cdnfonts.com/css/aptos');
@@ -18,14 +25,14 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
-            -webkit-text-size-adjust: 100%; /* Prevents font-size adjustments after orientation changes on iOS */
+            -webkit-text-size-adjust: 100%;
         }
 
         .glass-card {
             background: white;
             border: 1px solid #e2e8f0;
-            transition: all 0.2s ease-out;
-            touch-action: manipulation; /* Optimizes mobile tap delay */
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            touch-action: manipulation;
         }
 
         .glass-card:active {
@@ -40,7 +47,7 @@
             font-size: 0.65rem;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.025em;
+            letter-spacing: 0.05em;
             color: #94a3b8;
             margin-bottom: 0.5rem;
             margin-top: 1rem;
@@ -77,13 +84,22 @@
             border-radius: 2px;
         }
 
-        /* Prevents horizontal scrolling on tiny displays */
+        /* Hide horizontal scrollbar for clean suggestion list */
         .scrollbar-none::-webkit-scrollbar {
             display: none;
         }
         .scrollbar-none {
             -ms-overflow-style: none;
             scrollbar-width: none;
+        }
+
+        /* Micro-animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out forwards;
         }
     </style>
 </head>
@@ -269,9 +285,25 @@
     </footer>
 
     <script>
-        lucide.createIcons();
+        // Fail-safe Lucide initialization
+        function initLucide() {
+            try {
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                }
+            } catch (e) {
+                console.warn("Lucide icons load failure bypassed:", e);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initLucide();
+        });
 
         let conversationHistory = [];
+
+        // Your provided production API key
+        const geminiApiKey = "AQ.Ab8RN6LfcVqyMfwF9lkRTaS4rGxuyIK0PZSezsrYQNknIjXNBg";
 
         // Dynamic warm tutor greetings ("fluff") wraps
         const friendlyOpenings = [
@@ -300,7 +332,7 @@
             },
             {
                 keywords: ["kinetics", "rate of reaction", "speed", "collision theory", "temp", "temperature"],
-                reply: "<strong>Kinetics & Collision Theory:</strong><br>For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy ($E_a$).<br><br>Factors affecting the rate of reaction:<br><br>1. <strong>Temperature:</strong> Increasing temperature increases the kinetic energy of particles. Particles move faster, increasing collision frequency. Additionally, the fraction of colliding particles with energy greater than or equal to $E_a$ increases, leading to an increased frequency of effective collisions.<br>2. <strong>Concentration/Pressure:</strong> Increasing concentration or pressure increases the number of reactant particles per unit volume. This increases collision frequency, leading to an increased frequency of effective collisions.<br>3. <strong>Surface Area:</strong> Decreasing particle size increases total exposed surface area, increasing collision frequency and effective collision frequency.<br>4. <strong>Catalyst:</strong> Provides an alternative reaction pathway with lower activation energy ($E_a$). A larger fraction of particles possess energy greater than or equal to this lower $E_a$, increasing effective collision frequency."
+                reply: "<strong>Kinetics & Collision Theory:</strong><br>For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy (E<sub>a</sub>).<br><br>Factors affecting the rate of reaction:<br><br>1. <strong>Temperature:</strong> Increasing temperature increases the kinetic energy of particles. Particles move faster, increasing collision frequency. Additionally, the fraction of colliding particles with energy greater than or equal to E<sub>a</sub> increases, leading to an increased frequency of effective collisions.<br>2. <strong>Concentration/Pressure:</strong> Increasing concentration or pressure increases the number of reactant particles per unit volume. This increases collision frequency, leading to an increased frequency of effective collisions.<br>3. <strong>Surface Area:</strong> Decreasing particle size increases total exposed surface area, increasing collision frequency and effective collision frequency.<br>4. <strong>Catalyst:</strong> Provides an alternative reaction pathway with lower activation energy (E<sub>a</sub>). A larger fraction of particles possess energy greater than or equal to this lower E<sub>a</sub>, increasing effective collision frequency."
             },
             {
                 keywords: ["electrolysis", "electrolytic", "anode", "cathode", "discharge"],
@@ -312,7 +344,7 @@
             },
             {
                 keywords: ["displacement", "metal layer", "reactivity"],
-                reply: "<strong>Metal Displacement:</strong><br>A redox reaction where a more reactive metal oxidizes to form ions and displaces a less reactive metal from its salt solution by transferring electrons to the less reactive metal cations.<br><br>• <strong>Example:</strong> $Zn(s) + CuSO_4(aq) \\rightarrow ZnSO_4(aq) + Cu(s)$<br>• Zinc is oxidized ($Zn \\rightarrow Zn^{2+} + 2e^-$) and acts as the reducing agent.<br>• Copper(II) ions are reduced ($Cu^{2+} + 2e^- \\rightarrow Cu$) to form reddish-brown copper metal deposits."
+                reply: "<strong>Metal Displacement:</strong><br>A redox reaction where a more reactive metal oxidizes to form ions and displaces a less reactive metal from its salt solution by transferring electrons to the less reactive metal cations.<br><br>• <strong>Example:</strong> Zn(s) + CuSO<sub>4</sub>(aq) &rarr; ZnSO<sub>4</sub>(aq) + Cu(s)<br>• Zinc is oxidized (Zn &rarr; Zn<sup>2+</sup> + 2e<sup>-</sup>) and acts as the reducing agent.<br>• Copper(II) ions are reduced (Cu<sup>2+</sup> + 2e<sup>-</sup> &rarr; Cu) to form reddish-brown copper metal deposits."
             },
             {
                 keywords: ["table", "periodic", "group", "period", "trends"],
@@ -346,7 +378,7 @@
             sendMessage();
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chat-input');
             const query = input.value.trim();
             if (!query) return;
@@ -359,37 +391,78 @@
             // Add loading indicator
             const loadingId = renderLoadingIndicator();
 
-            // Simulate quick chemistry tutor thinking delay
-            setTimeout(() => {
-                document.getElementById(loadingId)?.remove();
-                const tutorReply = generateLocalResponse(query);
-                renderMessage(tutorReply, 'model');
-            }, 600);
-        }
+            conversationHistory.push({ role: "user", parts: [{ text: query }] });
 
-        // Fast, high-performance chemistry keyword router
-        function generateLocalResponse(query) {
+            // 1. Check for local instant matching to keep response incredibly instant & exact
             const lowerQuery = query.toLowerCase();
-            
-            // Look up matches inside local DB
+            let matchedLocal = null;
             for (const item of localKnowledgeBase) {
                 if (item.keywords.some(keyword => lowerQuery.includes(keyword))) {
-                    const rOpen = friendlyOpenings[Math.floor(Math.random() * friendlyOpenings.length)];
-                    const rClose = friendlyClosings[Math.floor(Math.random() * friendlyClosings.length)];
-                    
-                    return `${rOpen}<br><br>${item.reply}<br><br>${rClose}<br><span class="text-[9px] text-purple-600 font-semibold block mt-1">✓ Syllabus Specification Statement</span>`;
+                    matchedLocal = item;
+                    break;
                 }
             }
 
-            // High-quality interactive helper reply
-            return `That's an excellent chemistry query! Let's get our facts perfectly lined up. 🧪 I'm ready to explain anything on our syllabus instantly using exact definitions.<br><br>💡 <strong>Try asking me about:</strong><br>• <strong>Ionic or Covalent Bonding</strong> (Shared electrons vs Lattice structure)<br>• <strong>Kinetics & Collision Theory</strong> (Temperature, Concentration, Catalyst effects)<br>• <strong>Electrolysis</strong> (What happens at Anodes and Cathodes)<br>• <strong>Simple Cells & Reactivity</strong> (Generating voltage with metals)<br>• <strong>Metal Displacement</strong> or the <strong>Periodic Table</strong>!`;
+            if (matchedLocal) {
+                setTimeout(() => {
+                    document.getElementById(loadingId)?.remove();
+                    const rOpen = friendlyOpenings[Math.floor(Math.random() * friendlyOpenings.length)];
+                    const rClose = friendlyClosings[Math.floor(Math.random() * friendlyClosings.length)];
+                    const fullReply = `${rOpen}<br><br>${matchedLocal.reply}<br><br>${rClose}<br><span class="text-[9px] text-purple-600 font-semibold block mt-1">✓ Syllabus-Precise Match</span>`;
+                    renderMessage(fullReply, 'model');
+                }, 400);
+                return;
+            }
+
+            // 2. Fall back to live Gemini API call for customized/complex questions
+            try {
+                const reply = await callGeminiAPI(conversationHistory);
+                document.getElementById(loadingId)?.remove();
+                renderMessage(reply, 'model');
+                conversationHistory.push({ role: "model", parts: [{ text: reply }] });
+            } catch (err) {
+                document.getElementById(loadingId)?.remove();
+                const fallbackReply = `Excellent question! Let's get our concepts perfectly aligned. 🧪 I'm ready to explain anything on our syllabus instantly. Could you please ask specifically about:<br>• <strong>Bonding (Ionic/Covalent)</strong><br>• <strong>Kinetics & Collision Theory</strong><br>• <strong>Electrolysis & Simple Cells</strong><br>• <strong>Metal Displacement reactions</strong>?`;
+                renderMessage(fallbackReply, 'model');
+            }
         }
 
-        // Render standard bubble messages
+        // Live Gemini API client-side call
+        async function callGeminiAPI(contents) {
+            const systemPrompt = "You are AI Mr Leong, a warm, highly encouraging, and brilliant A* Chemistry tutor. Help students understand chemistry concepts deeply. Keep explanation summaries highly visual, structured, concise, and structured specifically to fit perfectly on standard mobile screen displays. Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $CO_2$) instead of plain unicode characters. Add bullet points for clarity where helpful.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`;
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: contents,
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        })
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (text) return text;
+                    }
+                } catch (e) {
+                    // Silently continue exponential backoff retries
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            throw new Error("API call failed");
+        }
+
+        // Render message bubbles + trigger live LaTeX equations compilation
         function renderMessage(text, sender) {
             const container = document.getElementById('chat-history');
             const wrapper = document.createElement('div');
-            wrapper.className = `flex items-start gap-2 max-w-[85%] ${sender === 'user' ? 'ml-auto justify-end' : ''}`;
+            wrapper.className = `flex items-start gap-2 max-w-[85%] animate-fade-in ${sender === 'user' ? 'ml-auto justify-end' : ''}`;
 
             let formattedText = text
                 .replace(/\n/g, '<br>')
@@ -414,6 +487,21 @@
 
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
+
+            // Instantly render beautiful math/chemistry formulas in elements safely
+            try {
+                if (typeof renderMathInElement !== 'undefined') {
+                    renderMathInElement(wrapper, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError : false
+                    });
+                }
+            } catch (e) {
+                console.warn("KaTeX dynamic rendering bypassed:", e);
+            }
         }
 
         // Render shimmering chat bubble as placeholder
@@ -436,6 +524,25 @@
             container.scrollTop = container.scrollHeight;
             return indicatorId;
         }
+
+        // Initial safe compilation setup for introductory messages
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                try {
+                    if (typeof renderMathInElement !== 'undefined') {
+                        renderMathInElement(document.getElementById('chat-history'), {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false}
+                            ],
+                            throwOnError : false
+                        });
+                    }
+                } catch (e) {
+                    console.warn("KaTeX load initialization bypassed:", e);
+                }
+            }, 500);
+        });
     </script>
 </body>
 </html>
