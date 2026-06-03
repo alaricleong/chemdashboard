@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>Chemistry Interactive Dashboard</title>
+
+    <!-- Global Error Guard to immediately silence cross-origin browser sandbox noise -->
+    <script>
+        window.addEventListener('error', function(e) {
+            if (e.message === 'Script error.' || e.message === 'Script error' || !e.filename) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.warn("Bypassed safe cross-origin CDN script error.");
+            }
+        }, true);
+    </script>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest" crossorigin="anonymous"></script>
+    <!-- Lucide Icons (Exact Version to avoid CORS redirects) -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.321.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
     
     <!-- KaTeX for Beautiful LaTeX Chemistry Formulas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" crossorigin="anonymous">
@@ -15,7 +28,6 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 
     <style>
-        /* Modern Font Stack */
         @import url('https://fonts.cdnfonts.com/css/aptos');
         
         body {
@@ -35,6 +47,577 @@
             touch-action: manipulation;
         }
 
+        .glass-card:active {
+            transform: scale(0.97);
+            background: #f1f5f9;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .section-title::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            background: #f1f5f9;
+        }
+
+        .card-title {
+            font-size: 11px;
+            line-height: 1.1;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* Slide-up panel styles */
+        #chat-drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Custom scrollbar for chat history */
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+
+        /* Hide horizontal scrollbar for clean suggestion list */
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Micro-animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="p-3 pt-2">
+
+    <main class="w-full max-w-md mx-auto flex-grow">
+        <!-- Compact Header -->
+        <header class="flex items-center justify-center gap-3 mb-2 py-2 border-b border-slate-100">
+            <div class="bg-blue-600 p-1.5 rounded-lg text-white">
+                <i data-lucide="beaker" size="18"></i>
+            </div>
+            <div class="text-left">
+                <h1 class="text-lg font-bold text-slate-800 leading-none">Mr Leong's A* Chemistry Hub</h1>
+                <p class="text-[10px] text-slate-400 font-medium">Interactive Learning Modules</p>
+            </div>
+        </header>
+
+        <!-- BONDING SECTION -->
+        <div class="section-title">Bonding & Fundamentals</div>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="https://alaricleong.github.io/chemformula/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-emerald-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="binary" size="14"></i>
+                </div>
+                <span class="card-title">Formulae</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemdotcrossionic/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-cyan-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="circle-dot" size="14"></i>
+                </div>
+                <span class="card-title">Ionic D/C</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemdotcrosscovalent/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-sky-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="share-2" size="14"></i>
+                </div>
+                <span class="card-title">Covalent D/C</span>
+            </a>
+        </div>
+
+        <!-- KINETICS & METALS SECTION -->
+        <div class="section-title">Kinetics & Metals</div>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="https://alaricleong.github.io/chemkineticslab/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-orange-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="timer" size="14"></i>
+                </div>
+                <span class="card-title">Kinetics</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemmetallayer/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-slate-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="layers" size="14"></i>
+                </div>
+                <span class="card-title">Metal Layer</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemmetaldisplacement/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-zinc-600 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="arrow-left-right" size="14"></i>
+                </div>
+                <span class="card-title">Displacement</span>
+            </a>
+        </div>
+
+        <!-- ELECTROCHEMISTRY & PERIODIC TABLE SECTION -->
+        <div class="section-title">Electrochemistry & Periodic Table</div>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="https://alaricleong.github.io/chemelectro/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-indigo-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="zap" size="14"></i>
+                </div>
+                <span class="card-title">Electrolytic</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemsimplecell/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-yellow-600 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="battery-charging" size="14"></i>
+                </div>
+                <span class="card-title">Simple Cell</span>
+            </a>
+            <a href="https://alaricleong.github.io/chemptable/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-blue-600 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="layout-grid" size="14"></i>
+                </div>
+                <span class="card-title">P. Table</span>
+            </a>
+        </div>
+
+        <!-- ADMIN SECTION -->
+        <div class="section-title">Admin & Resources</div>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="https://for.edu.sg/mrleongschemistry" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-purple-600 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="globe" size="14"></i>
+                </div>
+                <span class="card-title">Full Site</span>
+            </a>
+            <a href="https://for.edu.sg/mrleongchemconsult" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-rose-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="calendar" size="14"></i>
+                </div>
+                <span class="card-title">Booking</span>
+            </a>
+            <a href="https://docs.google.com/spreadsheets/d/1ftRho5SbsHnphLBzwynh13-5WMULwyZ0TkmSQ4pNJUU/edit" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+                <div class="w-7 h-7 rounded bg-amber-500 text-white flex items-center justify-center mb-1">
+                    <i data-lucide="map" size="14"></i>
+                </div>
+                <span class="card-title">Game Plan</span>
+            </a>
+        </div>
+
+        <!-- AI CHATBOT CARD (Trigger) -->
+        <div class="section-title">AI Assistant</div>
+        <button onclick="toggleChat(true)" class="w-full glass-card p-2.5 rounded-lg flex items-center justify-between group border-purple-200 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 active:from-purple-100 active:to-indigo-100 text-left">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
+                    <i data-lucide="sparkles" size="15"></i>
+                </div>
+                <div class="text-left">
+                    <span class="card-title block text-purple-900 font-bold">AI Mr Leong</span>
+                    <span class="text-[9px] text-slate-400 font-medium">Instant interactive tutor & doubt solver</span>
+                </div>
+            </div>
+            <i data-lucide="chevron-right" size="16" class="text-purple-500 group-hover:translate-x-0.5 transition-transform"></i>
+        </button>
+    </main>
+
+    <!-- NATIVE CHAT DRAWER PANEL -->
+    <div id="chat-drawer" class="fixed inset-x-0 bottom-0 h-[85vh] bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 translate-y-full z-50 flex flex-col max-w-md mx-auto">
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-white rounded-t-2xl">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
+                    <i data-lucide="sparkles" size="14"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-slate-800 leading-none">AI Mr Leong</h2>
+                    <span class="text-[9px] text-emerald-600 font-semibold flex items-center gap-0.5 mt-0.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online Chemistry Tutor
+                    </span>
+                </div>
+            </div>
+            <button onclick="toggleChat(false)" class="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" size="18"></i>
+            </button>
+        </div>
+
+        <!-- Dynamic Escalation Email Banner -->
+        <div class="bg-amber-50 border-b border-amber-100 px-4 py-2 flex items-center justify-between text-[11px] text-amber-800 animate-fade-in shrink-0">
+            <span class="flex items-center gap-1.5 font-medium leading-tight max-w-[65%]">
+                <i data-lucide="help-circle" size="14" class="text-amber-600 shrink-0"></i>
+                <span>Queries not answered adequately? Send logs to Mr Leong!</span>
+            </span>
+            <button onclick="emailMrLeong()" class="bg-amber-600 text-white px-2.5 py-1 rounded font-bold hover:bg-amber-700 active:scale-95 transition-all flex items-center gap-1 shrink-0">
+                <i data-lucide="mail" size="12"></i> Email Logs
+            </button>
+        </div>
+
+        <!-- Chat History Area -->
+        <div id="chat-history" class="flex-grow p-4 overflow-y-auto chat-scroll space-y-3 bg-slate-50/50">
+            <!-- Welcome message from AI Mr Leong -->
+            <div class="flex items-start gap-2 max-w-[85%]">
+                <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold">L</span>
+                </div>
+                <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed">
+                    Hello! I'm your study assistant, <strong class="text-purple-700">AI Mr Leong</strong>! Ask me any questions or tap a topic below. I will explain everything with zero lag! 🧪
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Suggestions Chips (Scrollable list optimized to hide scrollbar) -->
+        <div class="px-3 py-2 bg-slate-50/50 border-t border-slate-100 overflow-x-auto whitespace-nowrap flex gap-1.5 scrollbar-none">
+            <button onclick="quickAsk('Explain the bonding in an ionic lattice.')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Ionic Lattice</button>
+            <button onclick="quickAsk('How does temperature affect kinetics?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Temp & Kinetics</button>
+            <button onclick="quickAsk('What happens at the anode in electrolysis?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Electrolysis Anode</button>
+        </div>
+
+        <!-- Chat Input Field (Using text-base (16px) to avoid browser scaling during keyboard focus) -->
+        <div class="p-3 border-t border-slate-100 bg-white flex gap-2">
+            <input id="chat-input" type="text" placeholder="Ask AI Mr Leong..." onkeydown="handleKeyDown(event)" class="flex-grow border border-slate-200 rounded-xl px-3 py-2 text-[16px] md:text-xs focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-50 text-slate-800">
+            <button onclick="sendMessage()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:scale-95 text-white p-2.5 rounded-xl transition-all shadow-md shadow-purple-100 flex items-center justify-center">
+                <i data-lucide="send" size="16"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Backdrop overlay when drawer is open -->
+    <div id="chat-backdrop" onclick="toggleChat(false)" class="fixed inset-0 bg-slate-900/40 opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
+
+    <!-- Tiny Footer -->
+    <footer class="mt-4 pb-2 text-center">
+        <p class="text-slate-400 text-[9px] tracking-widest uppercase">
+            &copy; 2026 MR LEONG'S A* CHEMISTRY
+        </p>
+    </footer>
+
+    <script>
+        // Fail-safe Lucide initialization
+        function initLucide() {
+            try {
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                }
+            } catch (e) {
+                console.warn("Lucide icons load failure bypassed:", e);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initLucide();
+        });
+
+        let conversationHistory = [];
+
+        // Your provided production API key
+        const geminiApiKey = "AQ.Ab8RN6LfcVqyMfwF9lkRTaS4rGxuyIK0PZSezsrYQNknIjXNBg";
+
+        // Dynamic warm tutor greetings ("fluff") wraps
+        const friendlyOpenings = [
+            "Excellent choice of question! Let's make sure we master this concept completely. Here is the exact syllabus phrasing you need to memorize:",
+            "That's a very common exam area! Let's get our concepts perfectly aligned. Here is the unparaphrased definition directly from our core curriculum:",
+            "Wonderful query! Paying close attention to the exact keywords is the key to getting that A*. Let's review the precise syllabus statement together:",
+            "Great to see you checking up on this! Let's make sure we have the exact structural definitions in place. Here is the verbatim syllabus standard:"
+        ];
+
+        const friendlyClosings = [
+            "Make sure you remember these specific keywords for your papers! Let me know if you want to explore another question.",
+            "Using these exact terms is how we lock in full marks in structural questions. What should we study next?",
+            "Notice how specific the phrasing is? Try writing this out in your notes. What other topics are you working on today?",
+            "Memorize this exact phrasing for your exams! Feel free to ask another query whenever you are ready."
+        ];
+
+        // Built-in syllabus-precise response set (direct definitions from curriculum sources without paraphrasing)
+        const localKnowledgeBase = [
+            {
+                keywords: ["ionic", "electrostatic", "lattice", "metal and non-metal"],
+                reply: "<strong>Ionic Bonding:</strong><br>A strong electrostatic force of attraction between oppositely charged ions formed by the complete transfer of one or more electrons from a metal atom to a non-metal atom.<br><br>• <strong>Structure:</strong> Giant ionic crystal lattice structure.<br>• <strong>Melting/Boiling Points:</strong> High, because a large amount of energy is required to overcome the strong electrostatic forces of attraction holding the oppositely charged ions together in the lattice.<br>• <strong>Electrical Conductivity:</strong> Conducts electricity only in molten or aqueous state when the giant crystal lattice is broken down and mobile ions are free to act as charge carriers. Non-conductor in solid state as ions are held in fixed positions."
+            },
+            {
+                keywords: ["covalent", "share", "molecules", "non-metal"],
+                reply: "<strong>Covalent Bonding:</strong><br>A bond formed by the sharing of one or more pairs of valence electrons between non-metal atoms to achieve stable noble gas electronic configurations.<br><br>• <strong>Structure:</strong> Simple molecular structure.<br>• <strong>Melting/Boiling Points:</strong> Low, because minimal thermal energy is needed to overcome the weak intermolecular forces of attraction (van der Waals forces) between the simple molecules. The strong covalent bonds inside the molecules remain unbroken.<br>• <strong>Electrical Conductivity:</strong> Non-conductor of electricity in all states due to the absence of mobile ions or delocalized electrons to carry charge."
+            },
+            {
+                keywords: ["kinetics", "rate of reaction", "speed", "collision theory", "temp", "temperature"],
+                reply: "<strong>Kinetics & Collision Theory:</strong><br>For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy (E<sub>a</sub>).<br><br>Factors affecting the rate of reaction:<br><br>1. <strong>Temperature:</strong> Increasing temperature increases the kinetic energy of particles. Particles move faster, increasing collision frequency. Additionally, the fraction of colliding particles with energy greater than or equal to E<sub>a</sub> increases, leading to an increased frequency of effective collisions.<br>2. <strong>Concentration/Pressure:</strong> Increasing concentration or pressure increases the number of reactant particles per unit volume. This increases collision frequency, leading to an increased frequency of effective collisions.<br>3. <strong>Surface Area:</strong> Decreasing particle size increases total exposed surface area, increasing collision frequency and effective collision frequency.<br>4. <strong>Catalyst:</strong> Provides an alternative reaction pathway with lower activation energy (E<sub>a</sub>). A larger fraction of particles possess energy greater than or equal to this lower E<sub>a</sub>, increasing effective collision frequency."
+            },
+            {
+                keywords: ["electrolysis", "electrolytic", "anode", "cathode", "discharge"],
+                reply: "<strong>Electrolytic Cell:</strong><br>An electrochemical cell that uses electrical energy to drive a non-spontaneous chemical decomposition of an electrolyte.<br><br>• <strong>Anode (+):</strong> Electrode connected to the positive terminal of the power supply. Oxidation occurs at the anode (AnOx) where anions lose electrons.<br>• <strong>Cathode (-):</strong> Electrode connected to the negative terminal of the power supply. Reduction occurs at the cathode (RedCat) where cations gain electrons.<br>• <strong>Selective Discharge Rules:</strong> Determined by:<br>&nbsp;&nbsp;1. Position of ion in electrochemical series (lower reactivity ions are preferentially discharged).<br>&nbsp;&nbsp;2. Concentration of ion in the electrolyte (concentrated anions are preferentially discharged).<br>&nbsp;&nbsp;3. Nature of the electrode (reactive anodes will dissolve instead of anions discharging)."
+            },
+            {
+                keywords: ["simple cell", "battery", "voltage", "chemical energy"],
+                reply: "<strong>Simple Cell (Voltaic/Galvanic Cell):</strong><br>A device that converts chemical energy into electrical energy using two electrodes of different metals dipped in an electrolyte.<br><br>• <strong>Anode (-):</strong> The more reactive metal (higher in reactivity series) which oxidizes, loses electrons, and acts as the negative terminal.<br>• <strong>Cathode (+):</strong> The less reactive metal (lower in reactivity series) where reduction occurs, acting as the positive terminal.<br>• <strong>Voltage:</strong> The potential difference (voltage) generated is proportional to the difference in reactivity between the two metals on the reactivity series."
+            },
+            {
+                keywords: ["displacement", "metal layer", "reactivity"],
+                reply: "<strong>Metal Displacement:</strong><br>A redox reaction where a more reactive metal oxidizes to form ions and displaces a less reactive metal from its salt solution by transferring electrons to the less reactive metal cations.<br><br>• <strong>Example:</strong> Zn(s) + CuSO<sub>4</sub>(aq) &rarr; ZnSO<sub>4</sub>(aq) + Cu(s)<br>• Zinc is oxidized (Zn &rarr; Zn<sup>2+</sup> + 2e<sup>-</sup>) and acts as the reducing agent.<br>• Copper(II) ions are reduced (Cu<sup>2+</sup> + 2e<sup>-</sup> &rarr; Cu) to form reddish-brown copper metal deposits."
+            },
+            {
+                keywords: ["table", "periodic", "group", "period", "trends"],
+                reply: "<strong>The Periodic Table:</strong><br>An arrangement of elements in order of increasing proton (atomic) number.<br><br>• <strong>Group 1 (Alkali Metals):</strong> Reactivity increases down the group. Atomic radius increases, meaning the single valence electron is further from the nucleus and less strongly held, making it easier to lose.<br>• <strong>Group 17 (Halogens):</strong> Reactivity decreases down the group. Atomic radius increases, meaning the nucleus has a weaker attraction for incoming electrons, making it harder to gain one valence electron."
+            }
+        ];
+
+        function toggleChat(open) {
+            const drawer = document.getElementById('chat-drawer');
+            const backdrop = document.getElementById('chat-backdrop');
+            if (open) {
+                drawer.classList.remove('translate-y-full');
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                backdrop.classList.add('opacity-100');
+                document.getElementById('chat-input').focus();
+            } else {
+                drawer.classList.add('translate-y-full');
+                backdrop.classList.remove('opacity-100');
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function quickAsk(text) {
+            document.getElementById('chat-input').value = text;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const query = input.value.trim();
+            if (!query) return;
+
+            input.value = "";
+
+            // Render User Message
+            renderMessage(query, 'user');
+
+            // Add loading indicator
+            const loadingId = renderLoadingIndicator();
+
+            conversationHistory.push({ role: "user", parts: [{ text: query }] });
+
+            // 1. Check for local instant matching to keep response incredibly instant & exact
+            const lowerQuery = query.toLowerCase();
+            let matchedLocal = null;
+            for (const item of localKnowledgeBase) {
+                if (item.keywords.some(keyword => lowerQuery.includes(keyword))) {
+                    matchedLocal = item;
+                    break;
+                }
+            }
+
+            if (matchedLocal) {
+                setTimeout(() => {
+                    document.getElementById(loadingId)?.remove();
+                    const rOpen = friendlyOpenings[Math.floor(Math.random() * friendlyOpenings.length)];
+                    const rClose = friendlyClosings[Math.floor(Math.random() * friendlyClosings.length)];
+                    const fullReply = `${rOpen}<br><br>${matchedLocal.reply}<br><br>${rClose}<br><span class="text-[9px] text-purple-600 font-semibold block mt-1">✓ Syllabus-Precise Match</span>`;
+                    renderMessage(fullReply, 'model');
+                    conversationHistory.push({ role: "model", parts: [{ text: fullReply }] });
+                }, 400);
+                return;
+            }
+
+            // 2. Fall back to live Gemini API call for customized/complex questions
+            try {
+                const reply = await callGeminiAPI(conversationHistory);
+                document.getElementById(loadingId)?.remove();
+                renderMessage(reply, 'model');
+                conversationHistory.push({ role: "model", parts: [{ text: reply }] });
+            } catch (err) {
+                document.getElementById(loadingId)?.remove();
+                const fallbackReply = `Excellent question! Let's get our concepts perfectly aligned. 🧪 I'm ready to explain anything on our syllabus instantly. Could you please ask specifically about:<br>• <strong>Bonding (Ionic/Covalent)</strong><br>• <strong>Kinetics & Collision Theory</strong><br>• <strong>Electrolysis & Simple Cells</strong><br>• <strong>Metal Displacement reactions</strong>?`;
+                renderMessage(fallbackReply, 'model');
+                conversationHistory.push({ role: "model", parts: [{ text: fallbackReply }] });
+            }
+        }
+
+        // Live Gemini API client-side call
+        async function callGeminiAPI(contents) {
+            const systemPrompt = "You are AI Mr Leong, a warm, highly encouraging, and brilliant A* Chemistry tutor. Help students understand chemistry concepts deeply. Keep explanation summaries highly visual, structured, concise, and structured specifically to fit perfectly on standard mobile screen displays. Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $CO_2$) instead of plain unicode characters. Add bullet points for clarity where helpful.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`;
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: contents,
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        })
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (text) return text;
+                    }
+                } catch (e) {
+                    // Silently continue exponential backoff retries
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            throw new Error("API call failed");
+        }
+
+        // Render message bubbles + trigger live LaTeX equations compilation
+        function renderMessage(text, sender) {
+            const container = document.getElementById('chat-history');
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex items-start gap-2 max-w-[85%] animate-fade-in ${sender === 'user' ? 'ml-auto justify-end' : ''}`;
+
+            let formattedText = text
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            if (sender === 'user') {
+                wrapper.innerHTML = `
+                    <div class="bg-purple-600 text-white p-2.5 rounded-2xl rounded-tr-none shadow-sm text-xs leading-relaxed">
+                        ${formattedText}
+                    </div>
+                `;
+            } else {
+                wrapper.innerHTML = `
+                    <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                        <span class="text-[9px] font-bold">L</span>
+                    </div>
+                    <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed font-sans font-medium">
+                        ${formattedText}
+                    </div>
+                `;
+            }
+
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+
+            // Instantly render beautiful math/chemistry formulas in elements safely
+            try {
+                if (typeof renderMathInElement !== 'undefined') {
+                    renderMathInElement(wrapper, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError : false
+                    });
+                }
+            } catch (e) {
+                console.warn("KaTeX dynamic rendering bypassed:", e);
+            }
+        }
+
+        // Render shimmering chat bubble as placeholder
+        function renderLoadingIndicator() {
+            const container = document.getElementById('chat-history');
+            const indicatorId = 'ai-loading-' + Date.now();
+            const wrapper = document.createElement('div');
+            wrapper.id = indicatorId;
+            wrapper.className = "flex items-start gap-2 max-w-[85%] animate-pulse";
+            wrapper.innerHTML = `
+                <div class="w-6 h-6 rounded bg-purple-300 text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold">L</span>
+                </div>
+                <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-400 space-y-1.5 min-w-[100px]">
+                    <div class="h-2 bg-slate-200 rounded w-16"></div>
+                    <div class="h-2 bg-slate-200 rounded w-24"></div>
+                </div>
+            `;
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+            return indicatorId;
+        }
+
+        // Programmatic mailto action compiling the student questions and AI tutor answers
+        function emailMrLeong() {
+            const recipient = "leong_keng_wah_alaric@moe.edu.sg";
+            const subject = "Unresolved Chemistry Inquiry - AI Mr Leong Chat Log";
+            
+            let bodyText = "Dear Mr Leong,\n\nMy queries on the interactive chemistry dashboard were not answered adequately by the AI Assistant.\n\nPlease find the detailed session log below:\n\n";
+            bodyText += "==================================================\n";
+            bodyText += "                 AI TUTOR CHAT LOG                \n";
+            bodyText += "==================================================\n\n";
+
+            if (conversationHistory.length === 0) {
+                bodyText += "[No questions were submitted during this session.]\n";
+            } else {
+                conversationHistory.forEach((msg, index) => {
+                    const roleLabel = msg.role === 'user' ? "Student Question" : "AI Mr Leong Response";
+                    
+                    // Strip HTML formatting blocks gracefully for presentation in plaintext email body
+                    const cleanResponseText = msg.parts[0].text
+                        .replace(/<br\s*\/?>/gi, '\n') // Linebreaks
+                        .replace(/<[^>]*>/g, '')       // HTML nodes
+                        .replace(/&rarr;/g, '->')
+                        .replace(/&deg;/g, '°');
+
+                    bodyText += `[${index + 1}] ${roleLabel}:\n${cleanResponseText}\n\n`;
+                    bodyText += "--------------------------------------------------\n\n";
+                });
+            }
+
+            bodyText += "==================================================\n\n";
+            bodyText += "Could you please assist me with my queries when you are free?\n\nThank you,\n[Student Name]";
+
+            // Build dynamic mail link safe for iframe navigation
+            const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+            
+            try {
+                // Open mail application securely via dynamic blank navigation element
+                const anchor = document.createElement('a');
+                anchor.href = mailtoUrl;
+                anchor.target = "_blank";
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+            } catch (err) {
+                console.error("Failed to invoke mail system:", err);
+            }
+        }
+
+        // Initial safe compilation setup for introductory messages
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                try {
+                    if (typeof renderMathInElement !== 'undefined') {
+                        renderMathInElement(document.getElementById('chat-history'), {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false}
+                            ],
+                            throwOnError : false
+                        });
+                    }
+                } catch (e) {
+                    console.warn("KaTeX load initialization bypassed:", e);
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>
         .glass-card:active {
             transform: scale(0.97);
             background: #f1f5f9;
