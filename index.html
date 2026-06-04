@@ -248,7 +248,7 @@
                 <div>
                     <h2 class="text-sm font-bold text-slate-800 leading-none">AI Mr Leong</h2>
                     <span class="text-[9px] text-emerald-600 font-semibold flex items-center gap-0.5 mt-0.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online Chemistry Tutor
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Socratic Chemistry Tutor
                     </span>
                 </div>
             </div>
@@ -276,16 +276,16 @@
                     <span class="text-[9px] font-bold">L</span>
                 </div>
                 <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed">
-                    Hello! I'm your study assistant, <strong class="text-purple-700">AI Mr Leong</strong>! Ask me any questions or tap a topic below. I will explain everything with zero lag! 🧪
+                    Hello! I'm your study assistant, <strong class="text-purple-700">AI Mr Leong</strong>! Ask me any chemistry query. I won't just feed you the answers—I'll guide you step-by-step with leading questions so you truly master the concepts! 🧪
                 </div>
             </div>
         </div>
 
         <!-- Quick Suggestions Chips (Scrollable list optimized to hide scrollbar) -->
         <div class="px-3 py-2 bg-slate-50/50 border-t border-slate-100 overflow-x-auto whitespace-nowrap flex gap-1.5 scrollbar-none">
-            <button onclick="quickAsk('Explain the bonding in an ionic lattice.')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Ionic Lattice</button>
-            <button onclick="quickAsk('How does temperature affect kinetics?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Temp & Kinetics</button>
-            <button onclick="quickAsk('What happens at the anode in electrolysis?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Electrolysis Anode</button>
+            <button onclick="quickAsk('Can you explain ionic bonding?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Ionic Bonding</button>
+            <button onclick="quickAsk('How does temperature increase reaction rate?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Temperature & Rate</button>
+            <button onclick="quickAsk('What happens at the anode in an electrolytic cell?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Electrolysis Anode</button>
         </div>
 
         <!-- Chat Input Field (Using text-base (16px) to avoid browser scaling during keyboard focus) -->
@@ -328,52 +328,31 @@
         // Your provided production API key
         const geminiApiKey = "AQ.Ab8RN6LfcVqyMfwF9lkRTaS4rGxuyIK0PZSezsrYQNknIjXNBg";
 
-        // Dynamic warm tutor greetings ("fluff") wraps
-        const friendlyOpenings = [
-            "Excellent choice of question! Let's make sure we master this concept completely. Here is the exact syllabus phrasing you need to memorize:",
-            "That's a very common exam area! Let's get our concepts perfectly aligned. Here is the unparaphrased definition directly from our core curriculum:",
-            "Wonderful query! Paying close attention to the exact keywords is the key to getting that A*. Let's review the precise syllabus statement together:",
-            "Great to see you checking up on this! Let's make sure we have the exact structural definitions in place. Here is the verbatim syllabus standard:"
-        ];
+        // System Instruction containing unparaphrased content + strict instructions to act Socratically
+        const systemPrompt = `You are AI Mr Leong, a warm, highly encouraging Socratic Chemistry tutor following rigorous Singapore GCE O/A-Level specifications.
+Your goal is to guide students to exact, unparaphrased syllabus statements by asking leading questions. DO NOT give the full definition straightaway. 
 
-        const friendlyClosings = [
-            "Make sure you remember these specific keywords for your papers! Let me know if you want to explore another question.",
-            "Using these exact terms is how we lock in full marks in structural questions. What should we study next?",
-            "Notice how specific the phrasing is? Try writing this out in your notes. What other topics are you working on today?",
-            "Memorize this exact phrasing for your exams! Feel free to ask another query whenever you are ready."
-        ];
+Rules of interaction:
+1. Always keep explanations structured, encouraging, and highly visual using standard markdown and bullets.
+2. Ask leading questions step-by-step. For instance, if they ask about ionic bonding, don't dump the definition. Ask: "What are the two types of atoms (metals vs non-metals) that usually form ionic bonds, and what happens to their electrons?"
+3. Confirm correct partial answers enthusiastically and guide them to the next parts (e.g., electrostatic forces, lattice structures, melting points).
+4. Once they have arrived at the core understanding, present the verbatim, unparaphrased syllabus standard statement so they can memorize it exactly.
 
-        // Built-in syllabus-precise response set (direct definitions from curriculum sources without paraphrasing)
-        const localKnowledgeBase = [
-            {
-                keywords: ["ionic", "electrostatic", "lattice", "metal and non-metal"],
-                reply: "<strong>Ionic Bonding:</strong><br>A strong electrostatic force of attraction between oppositely charged ions formed by the complete transfer of one or more electrons from a metal atom to a non-metal atom.<br><br>• <strong>Structure:</strong> Giant ionic crystal lattice structure.<br>• <strong>Melting/Boiling Points:</strong> High, because a large amount of energy is required to overcome the strong electrostatic forces of attraction holding the oppositely charged ions together in the lattice.<br>• <strong>Electrical Conductivity:</strong> Conducts electricity only in molten or aqueous state when the giant crystal lattice is broken down and mobile ions are free to act as charge carriers. Non-conductor in solid state as ions are held in fixed positions."
-            },
-            {
-                keywords: ["covalent", "share", "molecules", "non-metal"],
-                reply: "<strong>Covalent Bonding:</strong><br>A bond formed by the sharing of one or more pairs of valence electrons between non-metal atoms to achieve stable noble gas electronic configurations.<br><br>• <strong>Structure:</strong> Simple molecular structure.<br>• <strong>Melting/Boiling Points:</strong> Low, because minimal thermal energy is needed to overcome the weak intermolecular forces of attraction (van der Waals forces) between the simple molecules. The strong covalent bonds inside the molecules remain unbroken.<br>• <strong>Electrical Conductivity:</strong> Non-conductor of electricity in all states due to the absence of mobile ions or delocalized electrons to carry charge."
-            },
-            {
-                keywords: ["kinetics", "rate of reaction", "speed", "collision theory", "temp", "temperature"],
-                reply: "<strong>Kinetics & Collision Theory:</strong><br>For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy (E<sub>a</sub>).<br><br>Factors affecting the rate of reaction:<br><br>1. <strong>Temperature:</strong> Increasing temperature increases the kinetic energy of particles. Particles move faster, increasing collision frequency. Additionally, the fraction of colliding particles with energy greater than or equal to E<sub>a</sub> increases, leading to an increased frequency of effective collisions.<br>2. <strong>Concentration/Pressure:</strong> Increasing concentration or pressure increases the number of reactant particles per unit volume. This increases collision frequency, leading to an increased frequency of effective collisions.<br>3. <strong>Surface Area:</strong> Decreasing particle size increases total exposed surface area, increasing collision frequency and effective collision frequency.<br>4. <strong>Catalyst:</strong> Provides an alternative reaction pathway with lower activation energy (E<sub>a</sub>). A larger fraction of particles possess energy greater than or equal to this lower E<sub>a</sub>, increasing effective collision frequency."
-            },
-            {
-                keywords: ["electrolysis", "electrolytic", "anode", "cathode", "discharge"],
-                reply: "<strong>Electrolytic Cell:</strong><br>An electrochemical cell that uses electrical energy to drive a non-spontaneous chemical decomposition of an electrolyte.<br><br>• <strong>Anode (+):</strong> Electrode connected to the positive terminal of the power supply. Oxidation occurs at the anode (AnOx) where anions lose electrons.<br>• <strong>Cathode (-):</strong> Electrode connected to the negative terminal of the power supply. Reduction occurs at the cathode (RedCat) where cations gain electrons.<br>• <strong>Selective Discharge Rules:</strong> Determined by:<br>&nbsp;&nbsp;1. Position of ion in electrochemical series (lower reactivity ions are preferentially discharged).<br>&nbsp;&nbsp;2. Concentration of ion in the electrolyte (concentrated anions are preferentially discharged).<br>&nbsp;&nbsp;3. Nature of the electrode (reactive anodes will dissolve instead of anions discharging)."
-            },
-            {
-                keywords: ["simple cell", "battery", "voltage", "chemical energy"],
-                reply: "<strong>Simple Cell (Voltaic/Galvanic Cell):</strong><br>A device that converts chemical energy into electrical energy using two electrodes of different metals dipped in an electrolyte.<br><br>• <strong>Anode (-):</strong> The more reactive metal (higher in reactivity series) which oxidizes, loses electrons, and acts as the negative terminal.<br>• <strong>Cathode (+):</strong> The less reactive metal (lower in reactivity series) where reduction occurs, acting as the positive terminal.<br>• <strong>Voltage:</strong> The potential difference (voltage) generated is proportional to the difference in reactivity between the two metals on the reactivity series."
-            },
-            {
-                keywords: ["displacement", "metal layer", "reactivity"],
-                reply: "<strong>Metal Displacement:</strong><br>A redox reaction where a more reactive metal oxidizes to form ions and displaces a less reactive metal from its salt solution by transferring electrons to the less reactive metal cations.<br><br>• <strong>Example:</strong> Zn(s) + CuSO<sub>4</sub>(aq) &rarr; ZnSO<sub>4</sub>(aq) + Cu(s)<br>• Zinc is oxidized (Zn &rarr; Zn<sup>2+</sup> + 2e<sup>-</sup>) and acts as the reducing agent.<br>• Copper(II) ions are reduced (Cu<sup>2+</sup> + 2e<sup>-</sup> &rarr; Cu) to form reddish-brown copper metal deposits."
-            },
-            {
-                keywords: ["table", "periodic", "group", "period", "trends"],
-                reply: "<strong>The Periodic Table:</strong><br>An arrangement of elements in order of increasing proton (atomic) number.<br><br>• <strong>Group 1 (Alkali Metals):</strong> Reactivity increases down the group. Atomic radius increases, meaning the single valence electron is further from the nucleus and less strongly held, making it easier to lose.<br>• <strong>Group 17 (Halogens):</strong> Reactivity decreases down the group. Atomic radius increases, meaning the nucleus has a weaker attraction for incoming electrons, making it harder to gain one valence electron."
-            }
-        ];
+Verbatim Syllabus Targets (Guide the student towards these exact wordings):
+- Ionic Bonding: A strong electrostatic force of attraction between oppositely charged ions formed by the complete transfer of one or more electrons from a metal atom to a non-metal atom. Structure: Giant ionic crystal lattice structure. Melting/Boiling Points: High, because a large amount of energy is required to overcome the strong electrostatic forces of attraction holding the oppositely charged ions together in the lattice. Electrical Conductivity: Conducts electricity only in molten or aqueous state when the giant crystal lattice is broken down and mobile ions are free to act as charge carriers. Non-conductor in solid state as ions are held in fixed positions.
+- Covalent Bonding: A bond formed by the sharing of one or more pairs of valence electrons between non-metal atoms to achieve stable noble gas electronic configurations. Structure: Simple molecular structure. Melting/Boiling Points: Low, because minimal thermal energy is needed to overcome the weak intermolecular forces of attraction (van der Waals forces) between the simple molecules. The strong covalent bonds inside the molecules remain unbroken. Electrical Conductivity: Non-conductor of electricity in all states due to the absence of mobile ions or delocalized electrons to carry charge.
+- Kinetics & Collision Theory: For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy (E_a). Factors affecting the rate of reaction: 
+  1. Temperature: Increasing temperature increases the kinetic energy of particles. Particles move faster, increasing collision frequency. Additionally, the fraction of colliding particles with energy greater than or equal to E_a increases, leading to an increased frequency of effective collisions.
+  2. Concentration/Pressure: Increasing concentration or pressure increases the number of reactant particles per unit volume. This increases collision frequency, leading to an increased frequency of effective collisions.
+  3. Surface Area: Decreasing particle size increases total exposed surface area, increasing collision frequency and effective collision frequency.
+  4. Catalyst: Provides an alternative reaction pathway with lower activation energy (E_a). A larger fraction of particles possess energy greater than or equal to this lower E_a, increasing effective collision frequency.
+- Electrolytic Cell: An electrochemical cell that uses electrical energy to drive a non-spontaneous chemical decomposition of an electrolyte. Anode (+): Electrode connected to the positive terminal of the power supply. Oxidation occurs at the anode (AnOx) where anions lose electrons. Cathode (-): Electrode connected to the negative terminal of the power supply. Reduction occurs at the cathode (RedCat) where cations gain electrons. Selective Discharge Rules: Determined by: 1. Position of ion in electrochemical series (lower reactivity ions are preferentially discharged). 2. Concentration of ion in the electrolyte (concentrated anions are preferentially discharged). 3. Nature of the electrode (reactive anodes will dissolve instead of anions discharging).
+- Simple Cell (Voltaic/Galvanic Cell): A device that converts chemical energy into electrical energy using two electrodes of different metals dipped in an electrolyte. Anode (-): The more reactive metal (higher in reactivity series) which oxidizes, loses electrons, and acts as the negative terminal. Cathode (+): The less reactive metal (lower in reactivity series) where reduction occurs, acting as the positive terminal. Voltage: The potential difference (voltage) generated is proportional to the difference in reactivity between the two metals on the reactivity series.
+- Metal Displacement: A redox reaction where a more reactive metal oxidizes to form ions and displaces a less reactive metal from its salt solution by transferring electrons to the less reactive metal cations. Example: Zn(s) + CuSO4(aq) -> ZnSO4(aq) + Cu(s). Zinc is oxidized (Zn -> Zn2+ + 2e-) and acts as the reducing agent. Copper(II) ions are reduced (Cu2+ + 2e- -> Cu) to form reddish-brown copper metal deposits.
+- The Periodic Table: An arrangement of elements in order of increasing proton (atomic) number. Group 1 (Alkali Metals): Reactivity increases down the group. Atomic radius increases, meaning the single valence electron is further from the nucleus and less strongly held, making it easier to lose. Group 17 (Halogens): Reactivity decreases down the group. Atomic radius increases, meaning the nucleus has a weaker attraction for incoming electrons, making it harder to gain one valence electron.
+
+Style Rules:
+Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $CO_2$) instead of plain Unicode characters. Ensure a highly supportive, positive classroom tone. Keep answers concise to fit perfectly on standard mobile screen displays without user zoom.`;
 
         function toggleChat(open) {
             const drawer = document.getElementById('chat-drawer');
@@ -416,46 +395,24 @@
 
             conversationHistory.push({ role: "user", parts: [{ text: query }] });
 
-            // 1. Check for local instant matching to keep response incredibly instant & exact
-            const lowerQuery = query.toLowerCase();
-            let matchedLocal = null;
-            for (const item of localKnowledgeBase) {
-                if (item.keywords.some(keyword => lowerQuery.includes(keyword))) {
-                    matchedLocal = item;
-                    break;
-                }
-            }
-
-            if (matchedLocal) {
-                setTimeout(() => {
-                    document.getElementById(loadingId)?.remove();
-                    const rOpen = friendlyOpenings[Math.floor(Math.random() * friendlyOpenings.length)];
-                    const rClose = friendlyClosings[Math.floor(Math.random() * friendlyClosings.length)];
-                    const fullReply = `${rOpen}<br><br>${matchedLocal.reply}<br><br>${rClose}<br><span class="text-[9px] text-purple-600 font-semibold block mt-1">✓ Syllabus-Precise Match</span>`;
-                    renderMessage(fullReply, 'model');
-                    conversationHistory.push({ role: "model", parts: [{ text: fullReply }] });
-                }, 400);
-                return;
-            }
-
-            // 2. Fall back to live Gemini API call for customized/complex questions
+            // Call Gemini Live API to generate Socratic guidance
             try {
                 const reply = await callGeminiAPI(conversationHistory);
                 document.getElementById(loadingId)?.remove();
                 renderMessage(reply, 'model');
                 conversationHistory.push({ role: "model", parts: [{ text: reply }] });
             } catch (err) {
+                console.error(err);
                 document.getElementById(loadingId)?.remove();
-                const fallbackReply = `Excellent question! Let's get our concepts perfectly aligned. 🧪 I'm ready to explain anything on our syllabus instantly. Could you please ask specifically about:<br>• <strong>Bonding (Ionic/Covalent)</strong><br>• <strong>Kinetics & Collision Theory</strong><br>• <strong>Electrolysis & Simple Cells</strong><br>• <strong>Metal Displacement reactions</strong>?`;
+                const fallbackReply = `Excellent attempt! Let's get our concepts perfectly aligned. 🧪 Could you share what kind of elements participate in that process so we can break down the exact mechanism?`;
                 renderMessage(fallbackReply, 'model');
                 conversationHistory.push({ role: "model", parts: [{ text: fallbackReply }] });
             }
         }
 
-        // Live Gemini API client-side call
+        // Client-side Gemini API request
         async function callGeminiAPI(contents) {
-            const systemPrompt = "You are AI Mr Leong, a warm, highly encouraging, and brilliant A* Chemistry tutor. Help students understand chemistry concepts deeply. Keep explanation summaries highly visual, structured, concise, and structured specifically to fit perfectly on standard mobile screen displays. Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $CO_2$) instead of plain unicode characters. Add bullet points for clarity where helpful.";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${geminiApiKey}`;
 
             let delay = 1000;
             for (let i = 0; i < 5; i++) {
@@ -473,14 +430,17 @@
                         const result = await response.json();
                         const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
                         if (text) return text;
+                    } else {
+                        const errorDetails = await response.text();
+                        console.warn("Gemini API non-200 response details:", errorDetails);
                     }
                 } catch (e) {
-                    // Silently continue exponential backoff retries
+                    console.warn(`Attempt ${i + 1} to call Gemini API failed. Retrying in ${delay}ms...`, e);
                 }
                 await new Promise(resolve => setTimeout(resolve, delay));
                 delay *= 2;
             }
-            throw new Error("API call failed");
+            throw new Error("Socratic AI session failed after multiple retries");
         }
 
         // Render message bubbles + trigger live LaTeX equations compilation
@@ -504,7 +464,7 @@
                     <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5">
                         <span class="text-[9px] font-bold">L</span>
                     </div>
-                    <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed font-sans font-medium">
+                    <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed font-sans">
                         ${formattedText}
                     </div>
                 `;
