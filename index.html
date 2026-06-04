@@ -404,27 +404,35 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
             } catch (err) {
                 console.error(err);
                 document.getElementById(loadingId)?.remove();
+                // A warm Socratic fallback when the API key or model fails
                 const fallbackReply = `Excellent attempt! Let's get our concepts perfectly aligned. 🧪 Could you share what kind of elements participate in that process so we can break down the exact mechanism?`;
                 renderMessage(fallbackReply, 'model');
                 conversationHistory.push({ role: "model", parts: [{ text: fallbackReply }] });
             }
         }
 
-        // Client-side Gemini API request
         async function callGeminiAPI(contents) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${geminiApiKey}`;
+            // Self-healing fallback list of models in case of restricted environments
+            const modelSequence = ["gemini-3-flash-preview", "gemini-1.5-flash", "gemini-2.5-flash"];
+            let lastError = null;
 
-            let delay = 1000;
-            for (let i = 0; i < 5; i++) {
+            for (const model of modelSequence) {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
                 try {
+                    const controller = new AbortController();
+                    // Set a quick timeout of 6 seconds to prevent hanging
+                    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
                     const response = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
+                        signal: controller.signal,
                         body: JSON.stringify({
                             contents: contents,
                             systemInstruction: { parts: [{ text: systemPrompt }] }
                         })
                     });
+                    clearTimeout(timeoutId);
 
                     if (response.ok) {
                         const result = await response.json();
@@ -432,18 +440,17 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                         if (text) return text;
                     } else {
                         const errorDetails = await response.text();
-                        console.warn("Gemini API non-200 response details:", errorDetails);
+                        console.warn(`Model ${model} failed:`, errorDetails);
+                        lastError = new Error(`API error (${response.status}): ${errorDetails}`);
                     }
                 } catch (e) {
-                    console.warn(`Attempt ${i + 1} to call Gemini API failed. Retrying in ${delay}ms...`, e);
+                    console.warn(`Model ${model} fetch failed:`, e);
+                    lastError = e;
                 }
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2;
             }
-            throw new Error("Socratic AI session failed after multiple retries");
+            throw lastError || new Error("Socratic AI session failed after sequence testing.");
         }
 
-        // Render message bubbles + trigger live LaTeX equations compilation
         function renderMessage(text, sender) {
             const container = document.getElementById('chat-history');
             const wrapper = document.createElement('div');
@@ -489,7 +496,6 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
             }
         }
 
-        // Render shimmering chat bubble as placeholder
         function renderLoadingIndicator() {
             const container = document.getElementById('chat-history');
             const indicatorId = 'ai-loading-' + Date.now();
@@ -510,7 +516,6 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
             return indicatorId;
         }
 
-        // Programmatic mailto action compiling the student questions and AI tutor answers
         function emailMrLeong() {
             const recipient = "leong_keng_wah_alaric@moe.edu.sg";
             const subject = "Unresolved Chemistry Inquiry - AI Mr Leong Chat Log";
