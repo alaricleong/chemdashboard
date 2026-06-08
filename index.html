@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>Chemistry Interactive Dashboard</title>
 
-    <!-- Global Error Guard to immediately silence cross-origin browser sandbox noise -->
+    <!-- Global Error Guard to suppress cross-origin browser sandbox noise -->
     <script>
         window.addEventListener('error', function(e) {
             if (e.message === 'Script error.' || e.message === 'Script error' || !e.filename) {
@@ -16,10 +16,24 @@
         }, true);
     </script>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Aptos', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
     
-    <!-- Lucide Icons (Exact Version to avoid CORS redirects) -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.321.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
     
     <!-- KaTeX for Beautiful LaTeX Chemistry Formulas -->
@@ -32,51 +46,16 @@
         
         body {
             font-family: 'Aptos', 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: #f8fafc;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
             -webkit-text-size-adjust: 100%;
         }
 
         .glass-card {
-            background: white;
-            border: 1px solid #e2e8f0;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             touch-action: manipulation;
         }
 
         .glass-card:active {
             transform: scale(0.97);
-            background: #f1f5f9;
-        }
-
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #94a3b8;
-            margin-bottom: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .section-title::after {
-            content: "";
-            flex-grow: 1;
-            height: 1px;
-            background: #f1f5f9;
-        }
-
-        .card-title {
-            font-size: 11px;
-            line-height: 1.1;
-            font-weight: 600;
-            color: #1e293b;
         }
 
         /* Slide-up panel styles */
@@ -115,122 +94,140 @@
         }
     </style>
 </head>
-<body class="p-3 pt-2">
+<body class="p-3 pt-2 bg-slate-50 dark:bg-darkBg text-slate-800 dark:text-slate-200 min-h-screen flex flex-col transition-colors duration-200">
 
     <main class="w-full max-w-md mx-auto flex-grow">
-        <!-- Compact Header -->
-        <header class="flex items-center justify-center gap-3 mb-2 py-2 border-b border-slate-100">
-            <div class="bg-blue-600 p-1.5 rounded-lg text-white">
-                <i data-lucide="beaker" size="18"></i>
+        <!-- Compact Header with Dark/Light Toggle -->
+        <header class="flex items-center justify-between mb-2 py-2 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-blue-600 dark:bg-blue-500 p-1.5 rounded-lg text-white">
+                    <i data-lucide="beaker" size="18"></i>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-base font-bold leading-none">Mr Leong's A* Chemistry Hub</h1>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">Interactive Learning Modules</p>
+                </div>
             </div>
-            <div class="text-left">
-                <h1 class="text-lg font-bold text-slate-800 leading-none">Mr Leong's A* Chemistry Hub</h1>
-                <p class="text-[10px] text-slate-400 font-medium">Interactive Learning Modules</p>
-            </div>
+            
+            <!-- Dark Mode Toggle Button -->
+            <button onclick="toggleTheme()" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Toggle Theme">
+                <span class="block dark:hidden text-amber-500"><i data-lucide="sun" size="16"></i></span>
+                <span class="hidden dark:block text-indigo-400"><i data-lucide="moon" size="16"></i></span>
+            </button>
         </header>
 
         <!-- BONDING SECTION -->
-        <div class="section-title">Bonding & Fundamentals</div>
+        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
+            Bonding & Fundamentals
+        </div>
         <div class="grid grid-cols-3 gap-2">
-            <a href="https://alaricleong.github.io/chemformula/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemformula/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-emerald-500 text-white flex items-center justify-center mb-1">
                     <i data-lucide="binary" size="14"></i>
                 </div>
-                <span class="card-title">Formulae</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Formulae</span>
             </a>
-            <a href="https://alaricleong.github.io/chemdotcrossionic/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemdotcrossionic/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-cyan-400 dark:hover:border-cyan-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-cyan-500 text-white flex items-center justify-center mb-1">
                     <i data-lucide="circle-dot" size="14"></i>
                 </div>
-                <span class="card-title">Ionic D/C</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Ionic D/C</span>
             </a>
-            <a href="https://alaricleong.github.io/chemdotcrosscovalent/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemdotcrosscovalent/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-sky-400 dark:hover:border-sky-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-sky-500 text-white flex items-center justify-center mb-1">
                     <i data-lucide="share-2" size="14"></i>
                 </div>
-                <span class="card-title">Covalent D/C</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Covalent D/C</span>
             </a>
         </div>
 
         <!-- KINETICS & METALS SECTION -->
-        <div class="section-title">Kinetics & Metals</div>
+        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
+            Kinetics & Metals
+        </div>
         <div class="grid grid-cols-3 gap-2">
-            <a href="https://alaricleong.github.io/chemkineticslab/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemkineticslab/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-orange-400 dark:hover:border-orange-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-orange-500 text-white flex items-center justify-center mb-1">
                     <i data-lucide="timer" size="14"></i>
                 </div>
-                <span class="card-title">Kinetics</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Kinetics</span>
             </a>
-            <a href="https://alaricleong.github.io/chemmetallayer/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemmetallayer/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-slate-500 text-white flex items-center justify-center mb-1">
                     <i data-lucide="layers" size="14"></i>
                 </div>
-                <span class="card-title">Metal Layer</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Metal Layer</span>
             </a>
-            <a href="https://alaricleong.github.io/chemmetaldisplacement/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemmetaldisplacement/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-zinc-400 dark:hover:border-zinc-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-zinc-600 text-white flex items-center justify-center mb-1">
                     <i data-lucide="arrow-left-right" size="14"></i>
                 </div>
-                <span class="card-title">Displacement</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Displacement</span>
             </a>
         </div>
 
         <!-- ELECTROCHEMISTRY & PERIODIC TABLE SECTION -->
-        <div class="section-title">Electrochemistry & Periodic Table</div>
+        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
+            Electrochemistry & Periodic Table
+        </div>
         <div class="grid grid-cols-3 gap-2">
-            <a href="https://alaricleong.github.io/chemelectro/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemelectro/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-indigo-500 text-white flex items-center justify-center mb-1">
                     <i data-lucide="zap" size="14"></i>
                 </div>
-                <span class="card-title">Electrolytic</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Electrolytic</span>
             </a>
-            <a href="https://alaricleong.github.io/chemsimplecell/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemsimplecell/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-yellow-400 dark:hover:border-yellow-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-yellow-600 text-white flex items-center justify-center mb-1">
                     <i data-lucide="battery-charging" size="14"></i>
                 </div>
-                <span class="card-title">Simple Cell</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Simple Cell</span>
             </a>
-            <a href="https://alaricleong.github.io/chemptable/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://alaricleong.github.io/chemptable/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-blue-600 text-white flex items-center justify-center mb-1">
                     <i data-lucide="layout-grid" size="14"></i>
                 </div>
-                <span class="card-title">P. Table</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">P. Table</span>
             </a>
         </div>
 
         <!-- ADMIN SECTION -->
-        <div class="section-title">Admin & Resources</div>
+        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
+            Admin & Resources
+        </div>
         <div class="grid grid-cols-3 gap-2">
-            <a href="https://for.edu.sg/mrleongschemistry" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://for.edu.sg/mrleongschemistry" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-purple-600 text-white flex items-center justify-center mb-1">
                     <i data-lucide="globe" size="14"></i>
                 </div>
-                <span class="card-title">Full Site</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Full Site</span>
             </a>
-            <a href="https://for.edu.sg/mrleongchemconsult" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://for.edu.sg/mrleongchemconsult" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-rose-400 dark:hover:border-rose-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-rose-500 text-white flex items-center justify-center mb-1">
                     <i data-lucide="calendar" size="14"></i>
                 </div>
-                <span class="card-title">Booking</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Booking</span>
             </a>
-            <a href="https://docs.google.com/spreadsheets/d/1ftRho5SbsHnphLBzwynh13-5WMULwyZ0TkmSQ4pNJUU/edit" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center">
+            <a href="https://docs.google.com/spreadsheets/d/1ftRho5SbsHnphLBzwynh13-5WMULwyZ0TkmSQ4pNJUU/edit" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-500 shadow-sm">
                 <div class="w-7 h-7 rounded bg-amber-500 text-white flex items-center justify-center mb-1">
                     <i data-lucide="map" size="14"></i>
                 </div>
-                <span class="card-title">Game Plan</span>
+                <span class="card-title text-slate-700 dark:text-slate-300">Game Plan</span>
             </a>
         </div>
 
         <!-- AI CHATBOT CARD (Trigger) -->
-        <div class="section-title">AI Assistant</div>
-        <button onclick="toggleChat(true)" class="w-full glass-card p-2.5 rounded-lg flex items-center justify-between group border-purple-200 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 active:from-purple-100 active:to-indigo-100 text-left">
+        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
+            AI Assistant
+        </div>
+        <button onclick="toggleChat(true)" class="w-full glass-card p-2.5 rounded-lg flex items-center justify-between group border-purple-200 dark:border-purple-900 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 hover:from-purple-100/60 dark:hover:from-purple-950/40 text-left">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
                     <i data-lucide="sparkles" size="15"></i>
                 </div>
                 <div class="text-left">
-                    <span class="card-title block text-purple-900 font-bold">AI Mr Leong</span>
-                    <span class="text-[9px] text-slate-400 font-medium">Instant interactive tutor & doubt solver</span>
+                    <span class="card-title block text-purple-900 dark:text-purple-300 font-bold">AI Mr Leong</span>
+                    <span class="text-[9px] text-slate-400 dark:text-slate-500 font-medium">Instant Socratic tutor & doubt solver</span>
                 </div>
             </div>
             <i data-lucide="chevron-right" size="16" class="text-purple-500 group-hover:translate-x-0.5 transition-transform"></i>
@@ -238,60 +235,60 @@
     </main>
 
     <!-- NATIVE CHAT DRAWER PANEL -->
-    <div id="chat-drawer" class="fixed inset-x-0 bottom-0 h-[85vh] bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 translate-y-full z-50 flex flex-col max-w-md mx-auto">
+    <div id="chat-drawer" class="fixed inset-x-0 bottom-0 h-[85vh] bg-white dark:bg-darkCard rounded-t-2xl shadow-2xl border-t border-slate-200 dark:border-slate-800 translate-y-full z-50 flex flex-col max-w-md mx-auto overflow-hidden">
         <!-- Drawer Header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-white rounded-t-2xl">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-darkCard rounded-t-2xl">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
                     <i data-lucide="sparkles" size="14"></i>
                 </div>
                 <div>
-                    <h2 class="text-sm font-bold text-slate-800 leading-none">AI Mr Leong</h2>
-                    <span class="text-[9px] text-emerald-600 font-semibold flex items-center gap-0.5 mt-0.5">
+                    <h2 class="text-sm font-bold text-slate-800 dark:text-slate-100 leading-none">AI Mr Leong</h2>
+                    <span class="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5 mt-0.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Socratic Chemistry Tutor
                     </span>
                 </div>
             </div>
-            <button onclick="toggleChat(false)" class="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600">
+            <button onclick="toggleChat(false)" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <i data-lucide="x" size="18"></i>
             </button>
         </div>
 
         <!-- Dynamic Escalation Email Banner -->
-        <div class="bg-amber-50 border-b border-amber-100 px-4 py-2 flex items-center justify-between text-[11px] text-amber-800 animate-fade-in shrink-0">
+        <div class="bg-amber-50 dark:bg-amber-950/20 border-b border-amber-100 dark:border-amber-900/30 px-4 py-2 flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-300 animate-fade-in shrink-0">
             <span class="flex items-center gap-1.5 font-medium leading-tight max-w-[65%]">
-                <i data-lucide="help-circle" size="14" class="text-amber-600 shrink-0"></i>
+                <i data-lucide="help-circle" size="14" class="text-amber-600 dark:text-amber-400 shrink-0"></i>
                 <span>Queries not answered adequately? Send logs to Mr Leong!</span>
             </span>
-            <button onclick="emailMrLeong()" class="bg-amber-600 text-white px-2.5 py-1 rounded font-bold hover:bg-amber-700 active:scale-95 transition-all flex items-center gap-1 shrink-0">
+            <button onclick="emailMrLeong()" class="bg-amber-600 dark:bg-amber-700 text-white px-2.5 py-1 rounded font-bold hover:bg-amber-700 active:scale-95 transition-all flex items-center gap-1 shrink-0">
                 <i data-lucide="mail" size="12"></i> Email Logs
             </button>
         </div>
 
         <!-- Chat History Area -->
-        <div id="chat-history" class="flex-grow p-4 overflow-y-auto chat-scroll space-y-3 bg-slate-50/50">
+        <div id="chat-history" class="flex-grow p-4 overflow-y-auto chat-scroll space-y-3 bg-slate-50/50 dark:bg-slate-900/30">
             <!-- Welcome message from AI Mr Leong -->
             <div class="flex items-start gap-2 max-w-[85%]">
-                <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                    <span class="text-[9px] font-bold">L</span>
+                <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                    <span class="text-[9px] font-bold text-white">L</span>
                 </div>
-                <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed">
-                    Hello! I'm your study assistant, <strong class="text-purple-700">AI Mr Leong</strong>! Ask me any chemistry query. I won't just feed you the answers—I'll guide you step-by-step with leading questions so you truly master the concepts! 🧪
+                <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    Hello! I'm your study assistant, <strong class="text-purple-700 dark:text-purple-400">AI Mr Leong</strong>! Ask me any chemistry query. I won't just feed you the answers—I'll guide you step-by-step with leading questions so you truly master the concepts! 🧪
                 </div>
             </div>
         </div>
 
         <!-- Quick Suggestions Chips (Scrollable list optimized to hide scrollbar) -->
-        <div class="px-3 py-2 bg-slate-50/50 border-t border-slate-100 overflow-x-auto whitespace-nowrap flex gap-1.5 scrollbar-none">
-            <button onclick="quickAsk('Can you explain ionic bonding?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Ionic Bonding</button>
-            <button onclick="quickAsk('How does temperature increase reaction rate?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Temperature & Rate</button>
-            <button onclick="quickAsk('What happens at the anode in an electrolytic cell?')" class="bg-white border border-slate-200 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-full active:bg-slate-100 shrink-0">Electrolysis Anode</button>
+        <div class="px-3 py-2 bg-slate-50/50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-800 overflow-x-auto whitespace-nowrap flex gap-1.5 scrollbar-none">
+            <button onclick="quickAsk('Can you explain ionic bonding?')" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-semibold px-2.5 py-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 shrink-0 shadow-sm transition-colors">Ionic Bonding</button>
+            <button onclick="quickAsk('How does temperature increase reaction rate?')" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-semibold px-2.5 py-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 shrink-0 shadow-sm transition-colors">Temperature & Rate</button>
+            <button onclick="quickAsk('What happens at the anode in an electrolytic cell?')" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-semibold px-2.5 py-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 shrink-0 shadow-sm transition-colors">Electrolysis Anode</button>
         </div>
 
-        <!-- Chat Input Field (Using text-base (16px) to avoid browser scaling during keyboard focus) -->
-        <div class="p-3 border-t border-slate-100 bg-white flex gap-2">
-            <input id="chat-input" type="text" placeholder="Ask AI Mr Leong..." onkeydown="handleKeyDown(event)" class="flex-grow border border-slate-200 rounded-xl px-3 py-2 text-[16px] md:text-xs focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-50 text-slate-800">
-            <button onclick="sendMessage()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:scale-95 text-white p-2.5 rounded-xl transition-all shadow-md shadow-purple-100 flex items-center justify-center">
+        <!-- Chat Input Field (Using text-base (16px) to avoid mobile Safaris auto-zooming on focus) -->
+        <div class="p-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-darkCard flex gap-2">
+            <input id="chat-input" type="text" placeholder="Ask AI Mr Leong..." onkeydown="handleKeyDown(event)" class="flex-grow border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-[16px] md:text-xs focus:outline-none focus:border-purple-400 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-50 dark:focus:ring-purple-950 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+            <button onclick="sendMessage()" class="bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-500 dark:to-indigo-500 hover:from-purple-700 hover:to-indigo-700 active:scale-95 text-white p-2.5 rounded-xl transition-all shadow-md shadow-purple-100 dark:shadow-none flex items-center justify-center">
                 <i data-lucide="send" size="16"></i>
             </button>
         </div>
@@ -301,13 +298,37 @@
     <div id="chat-backdrop" onclick="toggleChat(false)" class="fixed inset-0 bg-slate-900/40 opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
 
     <!-- Tiny Footer -->
-    <footer class="mt-4 pb-2 text-center">
-        <p class="text-slate-400 text-[9px] tracking-widest uppercase">
-            &copy; 2026 MR LEONG'S A* CHEMISTRY
+    <footer class="mt-4 pb-2 text-center mt-auto">
+        <p class="text-slate-400 dark:text-slate-500 text-[9px] tracking-widest uppercase font-semibold">
+            &copy; 2026 Mr Alaric Leong's A* Chemistry
         </p>
     </footer>
 
     <script>
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize user preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+        }
+
         // Fail-safe Lucide initialization
         function initLucide() {
             try {
@@ -322,6 +343,12 @@
         window.addEventListener('DOMContentLoaded', () => {
             initLucide();
         });
+
+        // TRACKING ACTIVE SOCRATIC CONVERSATIONAL PATHS
+        let chatState = {
+            topic: null,
+            step: 0
+        };
 
         let conversationHistory = [];
 
@@ -353,6 +380,57 @@ Verbatim Syllabus Targets (Guide the student towards these exact wordings):
 
 Style Rules:
 Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $CO_2$) instead of plain Unicode characters. Ensure a highly supportive, positive classroom tone. Keep answers concise to fit perfectly on standard mobile screen displays without user zoom.`;
+
+        // Socratic backup responses to keep interactions running even during server latency
+        const localSocraticFlows = {
+            ionic: [
+                {
+                    prompt: "That is a brilliant subject to tackle! Let's build up your understanding step-by-step.<br><br>First, let's look at the basic building blocks. 💡 <strong>Which two types of chemical elements (metals or non-metals) usually combine together to initiate this kind of bond?</strong>",
+                    validate: (input) => true
+                },
+                {
+                    prompt: "Spot on! Metals and non-metals is absolutely correct.<br><br>Now for the next step. 💡 <strong>What happens to the outer valence electrons? Are they shared, or is there a complete transfer from one atom to another?</strong>",
+                    validate: (input) => true
+                },
+                {
+                    prompt: "Fantastic! Yes, a complete transfer of electrons to form oppositely charged ions.<br><br>Now, 💡 <strong>what is the name of the strong attractive force that holds these oppositely charged ions together?</strong>",
+                    validate: (input) => true
+                },
+                {
+                    prompt: "Absolutely correct! Strong electrostatic forces of attraction. You have mastered this perfectly!<br><br>Here is the verbatim syllabus statement to lock in full marks in your exams:<br><br><strong>Ionic Bonding:</strong> A strong electrostatic force of attraction between oppositely charged ions formed by the complete transfer of one or more electrons from a metal atom to a non-metal atom.<br><br>Outstanding work! What shall we tackle next?"
+                }
+            ],
+            covalent: [
+                {
+                    prompt: "Covalent bonds are absolutely vital! Let's master this topic completely.<br><br>💡 To start our journey: <strong>What do non-metal atoms do with their outer valence electrons to reach a stable noble gas configuration? Do they transfer them, or do they share them?</strong>",
+                    validate: (input) => true
+                },
+                {
+                    prompt: "Brilliant! Yes, they share valence electrons.<br><br>Now, 💡 <strong>is covalent bonding formed between metals, non-metals, or a combination of both?</strong>",
+                    validate: (input) => true
+                },
+                {
+                    prompt: "Exactly! Between non-metal atoms. You've got it! Here is the exact, unparaphrased syllabus statement to memorize:<br><br><strong>Covalent Bonding:</strong> A bond formed by the sharing of one or more pairs of valence electrons between non-metal atoms to achieve stable noble gas electronic configurations.<br><br>Outstanding work! What's next on our list?"
+                }
+            ],
+            kinetics: [
+                {
+                    prompt: "Collision Theory is the secret to unlocking reaction rates! Let's break down how reactions happen.<br><br>💡 Think about this: <strong>For a chemical reaction to occur, what must reactant particles do with each other?</strong>",
+                    validate: (input) => true
+                },
+                {
+                    prompt: "Yes, they must collide!<br><br>But just colliding is not enough. 💡 <strong>What is the minimum amount of energy required for a collision to be successful (effective)?</strong> (Hint: It starts with 'activation'!)",
+                    validate: (input) => true
+                },
+                {
+                    prompt: "Spot on! That's the Activation Energy ($E_a$).<br><br>Now, 💡 <strong>how does increasing the temperature affect the kinetic energy and speed of the particles?</strong>",
+                    validate: (input) => true
+                },
+                {
+                    prompt: "Brilliant! Particles move faster and have higher kinetic energy, increasing collision frequency. Plus, a larger fraction of colliding particles possess energy $\ge E_a$, increasing effective collision frequency.<br><br>Here is the verbatim syllabus target for Collision Theory:<br><br><strong>Collision Theory:</strong> For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy ($E_a$).<br><br>You're a star! What shall we tackle next?"
+                }
+            ]
+        };
 
         function toggleChat(open) {
             const drawer = document.getElementById('chat-drawer');
@@ -395,7 +473,50 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
 
             conversationHistory.push({ role: "user", parts: [{ text: query }] });
 
-            // Call Gemini Live API to generate Socratic guidance
+            // 1. Process active Socratic State Machine transitions locally first to guarantee high speed
+            if (chatState.topic) {
+                const flow = localSocraticFlows[chatState.topic];
+                if (chatState.step < flow.length - 1) {
+                    setTimeout(() => {
+                        document.getElementById(loadingId)?.remove();
+                        const nextStep = flow[chatState.step];
+                        renderMessage(nextStep.prompt, 'model');
+                        conversationHistory.push({ role: "model", parts: [{ text: nextStep.prompt }] });
+                        chatState.step++;
+                        if (chatState.step === flow.length - 1) {
+                            // Reset state at the end of the Socratic flow
+                            chatState.topic = null;
+                            chatState.step = 0;
+                        }
+                    }, 400);
+                    return;
+                }
+            }
+
+            // Keyword triggers for fresh Socratic Sagas
+            const lowerQuery = query.toLowerCase();
+            let newTopic = null;
+            if (lowerQuery.includes("ionic") || lowerQuery.includes("electrostatic") || lowerQuery.includes("lattice")) {
+                newTopic = "ionic";
+            } else if (lowerQuery.includes("covalent") || lowerQuery.includes("share") || lowerQuery.includes("molecular")) {
+                newTopic = "covalent";
+            } else if (lowerQuery.includes("kinetic") || lowerQuery.includes("rate") || lowerQuery.includes("collision") || lowerQuery.includes("temperature")) {
+                newTopic = "kinetics";
+            }
+
+            if (newTopic) {
+                chatState.topic = newTopic;
+                chatState.step = 1;
+                const flow = localSocraticFlows[newTopic];
+                setTimeout(() => {
+                    document.getElementById(loadingId)?.remove();
+                    renderMessage(flow[0].prompt, 'model');
+                    conversationHistory.push({ role: "model", parts: [{ text: flow[0].prompt }] });
+                }, 400);
+                return;
+            }
+
+            // 2. Call self-healing Live Gemini API connection loops
             try {
                 const reply = await callGeminiAPI(conversationHistory);
                 document.getElementById(loadingId)?.remove();
@@ -404,51 +525,56 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
             } catch (err) {
                 console.error(err);
                 document.getElementById(loadingId)?.remove();
-                // A warm Socratic fallback when the API key or model fails
-                const fallbackReply = `Excellent attempt! Let's get our concepts perfectly aligned. 🧪 Could you share what kind of elements participate in that process so we can break down the exact mechanism?`;
+                
+                // Conversational socratic query generator in case of network issues
+                const fallbackReply = `That is a fantastic point to explore! Let's look closer at the mechanism. 🧪 Can you share what chemical species are involved, or what happens to the electrons in this reaction step?`;
                 renderMessage(fallbackReply, 'model');
                 conversationHistory.push({ role: "model", parts: [{ text: fallbackReply }] });
             }
         }
 
         async function callGeminiAPI(contents) {
-            // Self-healing fallback list of models in case of restricted environments
-            const modelSequence = ["gemini-3-flash-preview", "gemini-1.5-flash", "gemini-2.5-flash"];
+            // Updated prioritized sequence of generally available 2026 models supporting AQ keys
+            const modelSequence = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3-flash-preview"];
+            const keySequence = [geminiApiKey, ""]; // Cascade from your primary key to canvas platform runtime auth
             let lastError = null;
 
-            for (const model of modelSequence) {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
-                try {
-                    const controller = new AbortController();
-                    // Set a quick timeout of 6 seconds to prevent hanging
-                    const timeoutId = setTimeout(() => controller.abort(), 6000);
+            for (const key of keySequence) {
+                for (const model of modelSequence) {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 6500); // Strict 6.5s limit
 
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        signal: controller.signal,
-                        body: JSON.stringify({
-                            contents: contents,
-                            systemInstruction: { parts: [{ text: systemPrompt }] }
-                        })
-                    });
-                    clearTimeout(timeoutId);
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'x-goog-api-key': key
+                            },
+                            signal: controller.signal,
+                            body: JSON.stringify({
+                                contents: contents,
+                                systemInstruction: { parts: [{ text: systemPrompt }] }
+                            })
+                        });
+                        clearTimeout(timeoutId);
 
-                    if (response.ok) {
-                        const result = await response.json();
-                        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if (text) return text;
-                    } else {
-                        const errorDetails = await response.text();
-                        console.warn(`Model ${model} failed:`, errorDetails);
-                        lastError = new Error(`API error (${response.status}): ${errorDetails}`);
+                        if (response.ok) {
+                            const result = await response.json();
+                            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                            if (text) return text;
+                        } else {
+                            const errText = await response.text();
+                            console.warn(`Attempt failed with model ${model}:`, errText);
+                        }
+                    } catch (e) {
+                        console.warn(`Error running model ${model}:`, e);
+                        lastError = e;
                     }
-                } catch (e) {
-                    console.warn(`Model ${model} fetch failed:`, e);
-                    lastError = e;
                 }
             }
-            throw lastError || new Error("Socratic AI session failed after sequence testing.");
+            throw lastError || new Error("Socratic AI session failed.");
         }
 
         function renderMessage(text, sender) {
@@ -468,10 +594,10 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                 `;
             } else {
                 wrapper.innerHTML = `
-                    <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                        <span class="text-[9px] font-bold">L</span>
+                    <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-white">L</span>
                     </div>
-                    <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 leading-relaxed font-sans">
+                    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                         ${formattedText}
                     </div>
                 `;
@@ -480,7 +606,7 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
             container.appendChild(wrapper);
             container.scrollTop = container.scrollHeight;
 
-            // Instantly render beautiful math/chemistry formulas in elements safely
+            // Render LaTeX Math symbols securely
             try {
                 if (typeof renderMathInElement !== 'undefined') {
                     renderMathInElement(wrapper, {
@@ -503,12 +629,12 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
             wrapper.id = indicatorId;
             wrapper.className = "flex items-start gap-2 max-w-[85%] animate-pulse";
             wrapper.innerHTML = `
-                <div class="w-6 h-6 rounded bg-purple-300 text-white flex items-center justify-center shrink-0 mt-0.5">
-                    <span class="text-[9px] font-bold">L</span>
+                <div class="w-6 h-6 rounded bg-purple-300 dark:bg-purple-900 text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold text-white">L</span>
                 </div>
-                <div class="bg-white border border-slate-100 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-400 space-y-1.5 min-w-[100px]">
-                    <div class="h-2 bg-slate-200 rounded w-16"></div>
-                    <div class="h-2 bg-slate-200 rounded w-24"></div>
+                <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-400 dark:text-slate-500 space-y-1.5 min-w-[100px]">
+                    <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
+                    <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded w-24"></div>
                 </div>
             `;
             container.appendChild(wrapper);
@@ -531,10 +657,9 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                 conversationHistory.forEach((msg, index) => {
                     const roleLabel = msg.role === 'user' ? "Student Question" : "AI Mr Leong Response";
                     
-                    // Strip HTML formatting blocks gracefully for presentation in plaintext email body
                     const cleanResponseText = msg.parts[0].text
-                        .replace(/<br\s*\/?>/gi, '\n') // Linebreaks
-                        .replace(/<[^>]*>/g, '')       // HTML nodes
+                        .replace(/<br\s*\/?>/gi, '\n') 
+                        .replace(/<[^>]*>/g, '')       
                         .replace(/&rarr;/g, '->')
                         .replace(/&deg;/g, '°');
 
@@ -546,11 +671,9 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
             bodyText += "==================================================\n\n";
             bodyText += "Could you please assist me with my queries when you are free?\n\nThank you,\n[Student Name]";
 
-            // Build dynamic mail link safe for iframe navigation
             const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
             
             try {
-                // Open mail application securely via dynamic blank navigation element
                 const anchor = document.createElement('a');
                 anchor.href = mailtoUrl;
                 anchor.target = "_blank";
@@ -562,7 +685,7 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
             }
         }
 
-        // Initial safe compilation setup for introductory messages
+        // Initial setup for introductory messages
         window.addEventListener('load', () => {
             setTimeout(() => {
                 try {
