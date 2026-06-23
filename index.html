@@ -34,6 +34,7 @@
         }
     </script>
     
+    <!-- Lucide Icons -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.321.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
     
     <!-- KaTeX for Beautiful LaTeX Chemistry Formulas -->
@@ -109,7 +110,7 @@
                 </div>
             </div>
             
-            <!-- Dark Mode Toggle Button -->
+            <!-- Dark/Light Mode Toggle -->
             <button onclick="toggleTheme()" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Toggle Theme">
                 <span class="block dark:hidden text-amber-500"><i data-lucide="sun" size="16"></i></span>
                 <span class="hidden dark:block text-indigo-400"><i data-lucide="moon" size="16"></i></span>
@@ -344,12 +345,6 @@
             initLucide();
         });
 
-        // TRACKING ACTIVE SOCRATIC CONVERSATIONAL PATHS
-        let chatState = {
-            topic: null,
-            step: 0
-        };
-
         let conversationHistory = [];
 
         // Your provided production API key
@@ -380,57 +375,6 @@ Verbatim Syllabus Targets (Guide the student towards these exact wordings):
 
 Style Rules:
 Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $CO_2$) instead of plain Unicode characters. Ensure a highly supportive, positive classroom tone. Keep answers concise to fit perfectly on standard mobile screen displays without user zoom.`;
-
-        // Socratic backup responses to keep interactions running even during server latency
-        const localSocraticFlows = {
-            ionic: [
-                {
-                    prompt: "That is a brilliant subject to tackle! Let's build up your understanding step-by-step.<br><br>First, let's look at the basic building blocks. 💡 <strong>Which two types of chemical elements (metals or non-metals) usually combine together to initiate this kind of bond?</strong>",
-                    validate: (input) => true
-                },
-                {
-                    prompt: "Spot on! Metals and non-metals is absolutely correct.<br><br>Now for the next step. 💡 <strong>What happens to the outer valence electrons? Are they shared, or is there a complete transfer from one atom to another?</strong>",
-                    validate: (input) => true
-                },
-                {
-                    prompt: "Fantastic! Yes, a complete transfer of electrons to form oppositely charged ions.<br><br>Now, 💡 <strong>what is the name of the strong attractive force that holds these oppositely charged ions together?</strong>",
-                    validate: (input) => true
-                },
-                {
-                    prompt: "Absolutely correct! Strong electrostatic forces of attraction. You have mastered this perfectly!<br><br>Here is the verbatim syllabus statement to lock in full marks in your exams:<br><br><strong>Ionic Bonding:</strong> A strong electrostatic force of attraction between oppositely charged ions formed by the complete transfer of one or more electrons from a metal atom to a non-metal atom.<br><br>Outstanding work! What shall we tackle next?"
-                }
-            ],
-            covalent: [
-                {
-                    prompt: "Covalent bonds are absolutely vital! Let's master this topic completely.<br><br>💡 To start our journey: <strong>What do non-metal atoms do with their outer valence electrons to reach a stable noble gas configuration? Do they transfer them, or do they share them?</strong>",
-                    validate: (input) => true
-                },
-                {
-                    prompt: "Brilliant! Yes, they share valence electrons.<br><br>Now, 💡 <strong>is covalent bonding formed between metals, non-metals, or a combination of both?</strong>",
-                    validate: (input) => true
-                },
-                {
-                    prompt: "Exactly! Between non-metal atoms. You've got it! Here is the exact, unparaphrased syllabus statement to memorize:<br><br><strong>Covalent Bonding:</strong> A bond formed by the sharing of one or more pairs of valence electrons between non-metal atoms to achieve stable noble gas electronic configurations.<br><br>Outstanding work! What's next on our list?"
-                }
-            ],
-            kinetics: [
-                {
-                    prompt: "Collision Theory is the secret to unlocking reaction rates! Let's break down how reactions happen.<br><br>💡 Think about this: <strong>For a chemical reaction to occur, what must reactant particles do with each other?</strong>",
-                    validate: (input) => true
-                },
-                {
-                    prompt: "Yes, they must collide!<br><br>But just colliding is not enough. 💡 <strong>What is the minimum amount of energy required for a collision to be successful (effective)?</strong> (Hint: It starts with 'activation'!)",
-                    validate: (input) => true
-                },
-                {
-                    prompt: "Spot on! That's the Activation Energy ($E_a$).<br><br>Now, 💡 <strong>how does increasing the temperature affect the kinetic energy and speed of the particles?</strong>",
-                    validate: (input) => true
-                },
-                {
-                    prompt: "Brilliant! Particles move faster and have higher kinetic energy, increasing collision frequency. Plus, a larger fraction of colliding particles possess energy $\ge E_a$, increasing effective collision frequency.<br><br>Here is the verbatim syllabus target for Collision Theory:<br><br><strong>Collision Theory:</strong> For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy ($E_a$).<br><br>You're a star! What shall we tackle next?"
-                }
-            ]
-        };
 
         function toggleChat(open) {
             const drawer = document.getElementById('chat-drawer');
@@ -473,50 +417,7 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
 
             conversationHistory.push({ role: "user", parts: [{ text: query }] });
 
-            // 1. Process active Socratic State Machine transitions locally first to guarantee high speed
-            if (chatState.topic) {
-                const flow = localSocraticFlows[chatState.topic];
-                if (chatState.step < flow.length - 1) {
-                    setTimeout(() => {
-                        document.getElementById(loadingId)?.remove();
-                        const nextStep = flow[chatState.step];
-                        renderMessage(nextStep.prompt, 'model');
-                        conversationHistory.push({ role: "model", parts: [{ text: nextStep.prompt }] });
-                        chatState.step++;
-                        if (chatState.step === flow.length - 1) {
-                            // Reset state at the end of the Socratic flow
-                            chatState.topic = null;
-                            chatState.step = 0;
-                        }
-                    }, 400);
-                    return;
-                }
-            }
-
-            // Keyword triggers for fresh Socratic Sagas
-            const lowerQuery = query.toLowerCase();
-            let newTopic = null;
-            if (lowerQuery.includes("ionic") || lowerQuery.includes("electrostatic") || lowerQuery.includes("lattice")) {
-                newTopic = "ionic";
-            } else if (lowerQuery.includes("covalent") || lowerQuery.includes("share") || lowerQuery.includes("molecular")) {
-                newTopic = "covalent";
-            } else if (lowerQuery.includes("kinetic") || lowerQuery.includes("rate") || lowerQuery.includes("collision") || lowerQuery.includes("temperature")) {
-                newTopic = "kinetics";
-            }
-
-            if (newTopic) {
-                chatState.topic = newTopic;
-                chatState.step = 1;
-                const flow = localSocraticFlows[newTopic];
-                setTimeout(() => {
-                    document.getElementById(loadingId)?.remove();
-                    renderMessage(flow[0].prompt, 'model');
-                    conversationHistory.push({ role: "model", parts: [{ text: flow[0].prompt }] });
-                }, 400);
-                return;
-            }
-
-            // 2. Call self-healing Live Gemini API connection loops
+            // Direct AI Pipeline: References embedded data and uses generative Socratic models, avoiding all local pre-programmed answers
             try {
                 const reply = await callGeminiAPI(conversationHistory);
                 document.getElementById(loadingId)?.remove();
@@ -526,17 +427,17 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                 console.error(err);
                 document.getElementById(loadingId)?.remove();
                 
-                // Conversational socratic query generator in case of network issues
-                const fallbackReply = `That is a fantastic point to explore! Let's look closer at the mechanism. 🧪 Can you share what chemical species are involved, or what happens to the electrons in this reaction step?`;
+                // Conversational fallback warning in case of connection limits
+                const fallbackReply = `Excellent question! I ran into a brief connection delay while processing. Can you please check your internet connection or try re-submitting your query so we can analyze the step-by-step pathway together? 🧪`;
                 renderMessage(fallbackReply, 'model');
                 conversationHistory.push({ role: "model", parts: [{ text: fallbackReply }] });
             }
         }
 
         async function callGeminiAPI(contents) {
-            // Updated prioritized sequence of generally available 2026 models supporting AQ keys
-            const modelSequence = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3-flash-preview"];
-            const keySequence = [geminiApiKey, ""]; // Cascade from your primary key to canvas platform runtime auth
+            // Evaluates stable available models with client-side API parameters
+            const modelSequence = ["gemini-3.1-flash", "gemini-3-flash-preview", "gemini-1.5-flash"];
+            const keySequence = [geminiApiKey, ""]; // Cascades from key to canvas auto-auth parameters
             let lastError = null;
 
             for (const key of keySequence) {
@@ -544,7 +445,7 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
                     try {
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 6500); // Strict 6.5s limit
+                        const timeoutId = setTimeout(() => controller.abort(), 6500); // 6.5s limit
 
                         const response = await fetch(url, {
                             method: 'POST',
@@ -597,7 +498,7 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                     <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                         <span class="text-[9px] font-bold text-white">L</span>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
                         ${formattedText}
                     </div>
                 `;
