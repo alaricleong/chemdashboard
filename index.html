@@ -455,11 +455,7 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                             signal: controller.signal,
                             body: JSON.stringify({
                                 contents: contents,
-                                systemInstruction: {
-                                    parts: [
-                                        { text: systemPrompt }
-                                    ]
-                                }
+                                systemInstruction: { parts: [{ text: systemPrompt }] }
                             })
                         });
                         clearTimeout(timeoutId);
@@ -467,10 +463,7 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                         if (response.ok) {
                             const result = await response.json();
                             const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                            if (text){
-                                lastError = null; // Else it woud spit the error
-                                return text
-                            }; 
+                            if (text) return text; 
                         } else {
                             const errText = await response.text();
                             console.warn(`Attempt failed with model ${model}:`, errText);
