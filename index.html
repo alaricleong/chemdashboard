@@ -435,24 +435,23 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
         }
 
         async function callGeminiAPI(contents) {
-            // Evaluates stable available models with client-side API parameters
-            const modelSequence = ["gemini-3.1-flash", "gemini-3-flash-preview", "gemini-1.5-flash"];
-            const keySequence = [geminiApiKey, ""]; // Cascades from key to canvas auto-auth parameters
+            const modelSequence = ["gemini-3-flash-preview"];
+            const keySequence = [geminiApiKey]; 
             let lastError = null;
 
             for (const key of keySequence) {
                 for (const model of modelSequence) {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                    const urlBase = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+                    const url = key ? `${urlBase}?key=${key}` : urlBase;
+            
                     try {
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 6500); // 6.5s limit
+                        const timeoutId = setTimeout(() => controller.abort(), 6500);
 
+                        // Header duplication removed to accept new API key formats smoothly
                         const response = await fetch(url, {
                             method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'x-goog-api-key': key
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             signal: controller.signal,
                             body: JSON.stringify({
                                 contents: contents,
@@ -464,20 +463,19 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                         if (response.ok) {
                             const result = await response.json();
                             const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                            if (text) return text;
+                            if (text) return text; 
                         } else {
                             const errText = await response.text();
                             console.warn(`Attempt failed with model ${model}:`, errText);
                         }
                     } catch (e) {
                         console.warn(`Error running model ${model}:`, e);
-                        lastError = e;
+                        lastError = e; 
                     }
                 }
             }
             throw lastError || new Error("Socratic AI session failed.");
         }
-
         function renderMessage(text, sender) {
             const container = document.getElementById('chat-history');
             const wrapper = document.createElement('div');
