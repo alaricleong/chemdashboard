@@ -455,7 +455,11 @@ Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $
                             signal: controller.signal,
                             body: JSON.stringify({
                                 contents: contents,
-                                systemInstruction: { parts: [{ text: systemPrompt }] }
+                                systemInstruction: {
+                                    parts: [
+                                        { text: systemPrompt }
+                                    ]
+                                }
                             })
                         });
                         clearTimeout(timeoutId);
