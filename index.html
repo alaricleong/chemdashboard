@@ -1,609 +1,1382 @@
 <!DOCTYPE html>
 <html lang="en" class="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <title>Chemistry Interactive Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>AHS A* Chemistry Dashboard</title>
 
-    <!-- Global Error Guard to suppress cross-origin browser sandbox noise -->
-    <script>
-        window.addEventListener('error', function(e) {
-            if (e.message === 'Script error.' || e.message === 'Script error' || !e.filename) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.warn("Bypassed safe cross-origin CDN script error.");
-            }
-        }, true);
-    </script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Aptos', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-                    },
-                    colors: {
-                        darkBg: '#0f172a',
-                        darkCard: '#1e293b',
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.321.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
-    
-    <!-- KaTeX for Beautiful LaTeX Chemistry Formulas -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
-    <style>
-        @import url('https://fonts.cdnfonts.com/css/aptos');
-        
-        body {
-            font-family: 'Aptos', 'Inter', system-ui, -apple-system, sans-serif;
-            -webkit-text-size-adjust: 100%;
-        }
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-        .glass-card {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            touch-action: manipulation;
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkBg:   '#0f1117',
+            darkCard: '#1a1d27',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
         }
+      }
+    }
+  </script>
 
-        .glass-card:active {
-            transform: scale(0.97);
-        }
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-        /* Slide-up panel styles */
-        #chat-drawer {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* Custom scrollbar for chat history */
-        .chat-scroll::-webkit-scrollbar {
-            width: 4px;
-        }
-        .chat-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .chat-scroll::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 2px;
-        }
+    * { box-sizing: border-box; }
 
-        /* Hide horizontal scrollbar for clean suggestion list */
-        .scrollbar-none::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-none {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+    /* ── Scrollbar ── */
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Micro-animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.2s ease-out forwards;
-        }
-    </style>
+    /* ── Gradient text ── */
+    .gradient-text {
+      background: linear-gradient(135deg, #7c3aed, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── AI gradient button / badge ── */
+    .icon-ai {
+      background: linear-gradient(135deg, #7c3aed, #a855f7, #ec4899);
+    }
+
+    /* ── Card hover glow ── */
+    .card-glow {
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    .card-glow:hover {
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+      transform: translateY(-2px);
+    }
+
+    /* ── Chip ── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      background: linear-gradient(135deg, #ede9fe, #fce7f3);
+      color: #7c3aed;
+      border: 1px solid #ddd6fe;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dark .chip {
+      background: linear-gradient(135deg, #2e1065, #4a044e);
+      color: #d8b4fe;
+      border-color: #6d28d9;
+    }
+    .chip:hover { opacity: 0.85; transform: scale(1.04); }
+
+    /* ── Fade-in ── */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+
+    /* ── Float ── */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-4px); }
+    }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+
+    /* ── Pulse dot ── */
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+    .animate-pulse-dot { animation: pulseDot 1.5s ease-in-out infinite; }
+
+    /* ── Gradient border card ── */
+    .gradient-border {
+      position: relative;
+      border-radius: 1rem;
+      background: white;
+    }
+    .dark .gradient-border { background: #1a1d27; }
+    .gradient-border::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, #7c3aed33, #ec489933, #7c3aed33);
+      z-index: -1;
+    }
+
+    /* ── Section pill ── */
+    .section-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ── Chat drawer ── */
+    #chat-drawer {
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+  </style>
 </head>
-<body class="p-3 pt-2 bg-slate-50 dark:bg-darkBg text-slate-800 dark:text-slate-200 min-h-screen flex flex-col transition-colors duration-200">
 
-    <main class="w-full max-w-md mx-auto flex-grow">
-        <!-- Compact Header with Dark/Light Toggle -->
-        <header class="flex items-center justify-between mb-2 py-2 border-b border-slate-200 dark:border-slate-800">
-            <div class="flex items-center gap-2.5">
-                <div class="bg-blue-600 dark:bg-blue-500 p-1.5 rounded-lg text-white">
-                    <i data-lucide="beaker" size="18"></i>
-                </div>
-                <div class="text-left">
-                    <h1 class="text-base font-bold leading-none">Mr Leong's A* Chemistry Hub</h1>
-                    <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">Interactive Learning Modules</p>
-                </div>
+<body class="bg-slate-50 dark:bg-darkBg text-slate-800 dark:text-slate-100 font-sans min-h-screen transition-colors duration-300">
+
+<!-- ═══════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════ -->
+<header class="sticky top-0 z-30 bg-white/90 dark:bg-darkCard/90 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 px-4 py-3 flex items-center justify-between shadow-sm">
+  <div class="flex items-center gap-2.5">
+    <div class="w-8 h-8 rounded-xl icon-ai flex items-center justify-center shadow-lg animate-float">
+      <span class="text-white text-xs font-black">⚗</span>
+    </div>
+    <div>
+      <h1 class="text-sm font-black gradient-text leading-tight">AHS A* Chemistry</h1>
+      <p class="text-[9px] text-slate-400 dark:text-slate-500 font-medium">Mr Å. Leong · 2026</p>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <button onclick="toggleTheme()"
+      class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+      <i data-lucide="sun" size="14" class="dark:hidden"></i>
+      <i data-lucide="moon" size="14" class="hidden dark:block"></i>
+    </button>
+    <button onclick="emailMrLeong()"
+      class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+      <i data-lucide="mail" size="11"></i>
+      Email Mr Leong
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════ -->
+<main class="max-w-2xl mx-auto px-3 py-4 space-y-4">
+
+  <!-- Hero Banner -->
+  <div class="gradient-border card-glow overflow-hidden">
+    <div class="relative p-4 overflow-hidden">
+      <div class="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-purple-500/10 blur-2xl"></div>
+      <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-pink-500/10 blur-2xl"></div>
+      <div class="relative">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1">
+            <div class="section-pill bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-300 mb-2">
+              <span>🎯</span> O/A-Level Prep
             </div>
-            
-            <!-- Dark/Light Mode Toggle -->
-            <button onclick="toggleTheme()" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Toggle Theme">
-                <span class="block dark:hidden text-amber-500"><i data-lucide="sun" size="16"></i></span>
-                <span class="hidden dark:block text-indigo-400"><i data-lucide="moon" size="16"></i></span>
-            </button>
-        </header>
-
-        <!-- BONDING SECTION -->
-        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
-            Bonding & Fundamentals
+            <h2 class="text-base font-black text-slate-800 dark:text-white leading-tight mb-1">
+              Your Complete<br/>
+              <span class="gradient-text">Chemistry Survival Guide</span>
+            </h2>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              Tap any topic card below or ask AI Mr Leong anything from the Survival Guide — verbatim syllabus answers, step-by-step.
+            </p>
+          </div>
+          <div class="w-14 h-14 rounded-2xl icon-ai flex items-center justify-center shadow-xl shrink-0 animate-float">
+            <span class="text-2xl">🧪</span>
+          </div>
         </div>
-        <div class="grid grid-cols-3 gap-2">
-            <a href="https://alaricleong.github.io/chemformula/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-emerald-500 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="binary" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Formulae</span>
-            </a>
-            <a href="https://alaricleong.github.io/chemdotcrossionic/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-cyan-400 dark:hover:border-cyan-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-cyan-500 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="circle-dot" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Ionic D/C</span>
-            </a>
-            <a href="https://alaricleong.github.io/chemdotcrosscovalent/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-sky-400 dark:hover:border-sky-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-sky-500 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="share-2" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Covalent D/C</span>
-            </a>
-        </div>
-
-        <!-- KINETICS & METALS SECTION -->
-        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
-            Kinetics & Metals
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-            <a href="https://alaricleong.github.io/chemkineticslab/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-orange-400 dark:hover:border-orange-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-orange-500 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="timer" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Kinetics</span>
-            </a>
-            <a href="https://alaricleong.github.io/chemmetallayer/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-slate-500 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="layers" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Metal Layer</span>
-            </a>
-            <a href="https://alaricleong.github.io/chemmetaldisplacement/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-zinc-400 dark:hover:border-zinc-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-zinc-600 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="arrow-left-right" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Displacement</span>
-            </a>
-        </div>
-
-        <!-- ELECTROCHEMISTRY & PERIODIC TABLE SECTION -->
-        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
-            Electrochemistry & Periodic Table
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-            <a href="https://alaricleong.github.io/chemelectro/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-indigo-500 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="zap" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Electrolytic</span>
-            </a>
-            <a href="https://alaricleong.github.io/chemsimplecell/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-yellow-400 dark:hover:border-yellow-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-yellow-600 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="battery-charging" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Simple Cell</span>
-            </a>
-            <a href="https://alaricleong.github.io/chemptable/" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-blue-600 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="layout-grid" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">P. Table</span>
-            </a>
-        </div>
-
-        <!-- ADMIN SECTION -->
-        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
-            Admin & Resources
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-            <a href="https://for.edu.sg/mrleongschemistry" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-purple-600 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="globe" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Full Site</span>
-            </a>
-            <a href="https://for.edu.sg/mrleongchemconsult" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-rose-400 dark:hover:border-rose-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-rose-500 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="calendar" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Booking</span>
-            </a>
-            <a href="https://docs.google.com/spreadsheets/d/1ftRho5SbsHnphLBzwynh13-5WMULwyZ0TkmSQ4pNJUU/edit" target="_blank" class="glass-card p-2 rounded-lg flex flex-col items-center text-center bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-500 shadow-sm">
-                <div class="w-7 h-7 rounded bg-amber-500 text-white flex items-center justify-center mb-1">
-                    <i data-lucide="map" size="14"></i>
-                </div>
-                <span class="card-title text-slate-700 dark:text-slate-300">Game Plan</span>
-            </a>
-        </div>
-
-        <!-- AI CHATBOT CARD (Trigger) -->
-        <div class="section-title flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 my-2.5 after:h-[1px] after:bg-slate-200 dark:after:bg-slate-800 after:flex-grow">
-            AI Assistant
-        </div>
-        <button onclick="toggleChat(true)" class="w-full glass-card p-2.5 rounded-lg flex items-center justify-between group border-purple-200 dark:border-purple-900 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 hover:from-purple-100/60 dark:hover:from-purple-950/40 text-left">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
-                    <i data-lucide="sparkles" size="15"></i>
-                </div>
-                <div class="text-left">
-                    <span class="card-title block text-purple-900 dark:text-purple-300 font-bold">AI Mr Leong</span>
-                    <span class="text-[9px] text-slate-400 dark:text-slate-500 font-medium">Instant Socratic tutor & doubt solver</span>
-                </div>
-            </div>
-            <i data-lucide="chevron-right" size="16" class="text-purple-500 group-hover:translate-x-0.5 transition-transform"></i>
+        <button onclick="toggleChat(true)"
+          class="mt-3 w-full icon-ai text-white text-xs font-bold py-2.5 rounded-xl shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+          <div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse-dot"></div>
+          Ask AI Mr Leong a Question
+          <i data-lucide="chevron-right" size="13"></i>
         </button>
-    </main>
+      </div>
+    </div>
+  </div>
 
-    <!-- NATIVE CHAT DRAWER PANEL -->
-    <div id="chat-drawer" class="fixed inset-x-0 bottom-0 h-[85vh] bg-white dark:bg-darkCard rounded-t-2xl shadow-2xl border-t border-slate-200 dark:border-slate-800 translate-y-full z-50 flex flex-col max-w-md mx-auto overflow-hidden">
-        <!-- Drawer Header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-darkCard rounded-t-2xl">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
-                    <i data-lucide="sparkles" size="14"></i>
-                </div>
-                <div>
-                    <h2 class="text-sm font-bold text-slate-800 dark:text-slate-100 leading-none">AI Mr Leong</h2>
-                    <span class="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5 mt-0.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Socratic Chemistry Tutor
-                    </span>
-                </div>
-            </div>
-            <button onclick="toggleChat(false)" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                <i data-lucide="x" size="18"></i>
-            </button>
-        </div>
+  <!-- ── SECTION: Foundations ── -->
+  <div>
+    <div class="section-pill bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-300 mb-2">
+      <span>🔬</span> Foundations
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
 
-        <!-- Dynamic Escalation Email Banner -->
-        <div class="bg-amber-50 dark:bg-amber-950/20 border-b border-amber-100 dark:border-amber-900/30 px-4 py-2 flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-300 animate-fade-in shrink-0">
-            <span class="flex items-center gap-1.5 font-medium leading-tight max-w-[65%]">
-                <i data-lucide="help-circle" size="14" class="text-amber-600 dark:text-amber-400 shrink-0"></i>
-                <span>Queries not answered adequately? Send logs to Mr Leong!</span>
-            </span>
-            <button onclick="emailMrLeong()" class="bg-amber-600 dark:bg-amber-700 text-white px-2.5 py-1 rounded font-bold hover:bg-amber-700 active:scale-95 transition-all flex items-center gap-1 shrink-0">
-                <i data-lucide="mail" size="12"></i> Email Logs
-            </button>
-        </div>
+      <!-- Atomic Structure -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain isotopes and how to calculate relative atomic mass'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950 flex items-center justify-center mb-2 text-base">⚛️</div>
+        <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-0.5">Atomic Structure</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Isotopes, particles & relative atomic mass</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Protons · Neutrons · Electrons · Isotopes · Allotropes</p>
+      </div>
 
-        <!-- Chat History Area -->
-        <div id="chat-history" class="flex-grow p-4 overflow-y-auto chat-scroll space-y-3 bg-slate-50/50 dark:bg-slate-900/30">
-            <!-- Welcome message from AI Mr Leong -->
-            <div class="flex items-start gap-2 max-w-[85%]">
-                <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                    <span class="text-[9px] font-bold text-white">L</span>
-                </div>
-                <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                    Hello! I'm your study assistant, <strong class="text-purple-700 dark:text-purple-400">AI Mr Leong</strong>! Ask me any chemistry query. I won't just feed you the answers—I'll guide you step-by-step with leading questions so you truly master the concepts! 🧪
-                </div>
-            </div>
-        </div>
+      <!-- Kinetic Particle Theory -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain kinetic particle theory and the properties of solids, liquids and gases'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-cyan-100 dark:bg-cyan-950 flex items-center justify-center mb-2 text-base">🌡️</div>
+        <p class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wide mb-0.5">Kinetic Particle Theory</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">States of matter, diffusion & porous pot</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Solid · Liquid · Gas · Diffusion · Cooling curves</p>
+      </div>
 
-        <!-- Quick Suggestions Chips (Scrollable list optimized to hide scrollbar) -->
-        <div class="px-3 py-2 bg-slate-50/50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-800 overflow-x-auto whitespace-nowrap flex gap-1.5 scrollbar-none">
-            <button onclick="quickAsk('Can you explain ionic bonding?')" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-semibold px-2.5 py-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 shrink-0 shadow-sm transition-colors">Ionic Bonding</button>
-            <button onclick="quickAsk('How does temperature increase reaction rate?')" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-semibold px-2.5 py-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 shrink-0 shadow-sm transition-colors">Temperature & Rate</button>
-            <button onclick="quickAsk('What happens at the anode in an electrolytic cell?')" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-semibold px-2.5 py-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 shrink-0 shadow-sm transition-colors">Electrolysis Anode</button>
-        </div>
+      <!-- Calculations -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='How do I calculate moles, empirical formula and percentage yield?'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-green-100 dark:bg-green-950 flex items-center justify-center mb-2 text-base">🧮</div>
+        <p class="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wide mb-0.5">Calculations</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Moles, empirical formula & % yield</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Moles · Mr · Concentration · Limiting reagent</p>
+      </div>
 
-        <!-- Chat Input Field (Using text-base (16px) to avoid mobile Safaris auto-zooming on focus) -->
-        <div class="p-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-darkCard flex gap-2">
-            <input id="chat-input" type="text" placeholder="Ask AI Mr Leong..." onkeydown="handleKeyDown(event)" class="flex-grow border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-[16px] md:text-xs focus:outline-none focus:border-purple-400 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-50 dark:focus:ring-purple-950 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-            <button onclick="sendMessage()" class="bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-500 dark:to-indigo-500 hover:from-purple-700 hover:to-indigo-700 active:scale-95 text-white p-2.5 rounded-xl transition-all shadow-md shadow-purple-100 dark:shadow-none flex items-center justify-center">
-                <i data-lucide="send" size="16"></i>
-            </button>
+      <!-- Separation Techniques -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the different separation and purification techniques'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-950 flex items-center justify-center mb-2 text-base">🔭</div>
+        <p class="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-0.5">Separation</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Chromatography, distillation & filtration</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Rf value · Solvent front · Fractional distillation</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Bonding & Structure ── -->
+  <div>
+    <div class="section-pill bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-300 mb-2">
+      <span>🔗</span> Bonding & Structure
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Chemical Bonding -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Compare ionic, covalent and metallic bonding in terms of structure, melting point and electrical conductivity'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950 flex items-center justify-center mb-2 text-base">⚡</div>
+        <p class="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wide mb-0.5">Chemical Bonding</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Ionic, covalent & metallic bonds</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">MP/BP · Conductivity · Solubility · Structure</p>
+      </div>
+
+      <!-- Graphite & Diamond -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Why is diamond hard but graphite soft, and why does graphite conduct electricity?'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2 text-base">💎</div>
+        <p class="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-0.5">Diamond & Graphite</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Giant molecular structures & properties</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">GMS · Delocalised e⁻ · Hardness · Conductivity</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Acids, Bases & Salts ── -->
+  <div>
+    <div class="section-pill bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-300 mb-2">
+      <span>🧪</span> Acids, Bases & Salts
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Acids & Bases -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='What are the definitions of acids, alkalis and bases, and what are their chemical properties?'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-950 flex items-center justify-center mb-2 text-base">🔴</div>
+        <p class="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide mb-0.5">Acids & Bases</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Definitions, pH, indicators & strength</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Strong/weak · pH · Litmus · Neutralisation</p>
+      </div>
+
+      <!-- Salt Preparation -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='How do I prepare soluble and insoluble salts?'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-yellow-100 dark:bg-yellow-950 flex items-center justify-center mb-2 text-base">🧂</div>
+        <p class="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-wide mb-0.5">Salt Preparation</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Titration, precipitation & acid + solid</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Solubility rules · Crystallisation · Filtration</p>
+      </div>
+
+      <!-- Types of Oxides -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='What are the different types of oxides and how do they react?'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer col-span-2">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-950 flex items-center justify-center text-base shrink-0">🔥</div>
+          <div>
+            <p class="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-0.5">Types of Oxides</p>
+            <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Basic, acidic, amphoteric (ZAP) & neutral oxides</p>
+            <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">ZnO · Al₂O₃ · PbO · CO₂ · SO₂ · H₂O · CO · NO</p>
+          </div>
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Kinetics & Energetics ── -->
+  <div>
+    <div class="section-pill bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-300 mb-2">
+      <span>⚡</span> Kinetics & Energetics
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Speed of Reaction -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the factors that affect the rate of reaction using collision theory'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950 flex items-center justify-center mb-2 text-base">💥</div>
+        <p class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-0.5">Rate of Reaction</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Collision theory & factors affecting rate</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Ea · Catalyst · Temp · Conc · Surface area</p>
+      </div>
+
+      <!-- Energy Changes -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain exothermic and endothermic reactions and how to draw energy profile diagrams'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-950 flex items-center justify-center mb-2 text-base">🌡️</div>
+        <p class="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide mb-0.5">Energy Changes</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Exo/endothermic & energy diagrams</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">ΔH · Bond breaking/forming · Ea · Catalyst</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Periodic Table ── -->
+  <div>
+    <div class="section-pill bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-300 mb-2">
+      <span>📊</span> Periodic Table
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Group 1 -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the properties and reactions of Group 1 alkali metals'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-950 flex items-center justify-center mb-2 text-base">1️⃣</div>
+        <p class="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-0.5">Group 1</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Alkali metals — reactions & trends</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Li · Na · K · Water · Reactivity trend</p>
+      </div>
+
+      <!-- Group 17 -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the properties and displacement reactions of Group 17 halogens'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-lime-100 dark:bg-lime-950 flex items-center justify-center mb-2 text-base">7️⃣</div>
+        <p class="text-[10px] font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wide mb-0.5">Group 17</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Halogens — displacement & trends</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">F₂ · Cl₂ · Br₂ · I₂ · Displacement reactions</p>
+      </div>
+
+      <!-- Transition Metals -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='What are the distinguishing properties of transition metals?'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center mb-2 text-base">🔩</div>
+        <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-0.5">Transition Metals</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Variable OS, coloured compounds & catalysts</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Fe · Cu · Mn · Variable oxidation states</p>
+      </div>
+
+      <!-- Periodic Trends -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the periodic trends in atomic radius, ionisation energy and metallic character down a group and across a period'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-950 flex items-center justify-center mb-2 text-base">📈</div>
+        <p class="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide mb-0.5">Periodic Trends</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Atomic radius, IE & metallic character</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Down group · Across period · FOA · IE</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Metals & Redox ── -->
+  <div>
+    <div class="section-pill bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-300 mb-2">
+      <span>⚙️</span> Metals & Redox
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Metals -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the reactivity series and reactions of metals with water, steam and acids'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-950 flex items-center justify-center mb-2 text-base">🔧</div>
+        <p class="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-0.5">Metals</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Reactivity series, alloys & corrosion</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">K·Na·Ca·Mg·Zn·Fe·Pb·Cu·Ag·Au</p>
+      </div>
+
+      <!-- Redox -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain oxidation and reduction using OIL RIG and oxidation states'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-950 flex items-center justify-center mb-2 text-base">🔄</div>
+        <p class="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide mb-0.5">Redox</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">OIL RIG, oxidation states & agents</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">OA · RA · OS · KMnO₄ · K₂Cr₂O₇</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Electrolysis ── -->
+  <div>
+    <div class="section-pill bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-300 mb-2">
+      <span>🔋</span> Electrolysis
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Electrolysis -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain electrolysis, the electrochemical series and what is discharged at the anode and cathode'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-950 flex items-center justify-center mb-2 text-base">⚡</div>
+        <p class="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wide mb-0.5">Electrolysis</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">ECS, anode & cathode discharge</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Anode · Cathode · ECS · Reactive electrode</p>
+      </div>
+
+      <!-- Fuel Cells & Simple Cells -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain simple cells, fuel cells and the advantages and problems of using hydrogen as a fuel'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center mb-2 text-base">🔋</div>
+        <p class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-0.5">Cells & Fuel Cells</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Simple cells, voltage & hydrogen fuel</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Reactivity · Voltage · H₂ fuel · Electrolytic cell</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Environment ── -->
+  <div>
+    <div class="section-pill bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-300 mb-2">
+      <span>🌍</span> Environment & Air
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Air & Ammonia -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the Haber process for making ammonia and the effect of temperature and pressure on yield'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-green-100 dark:bg-green-950 flex items-center justify-center mb-2 text-base">🌿</div>
+        <p class="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wide mb-0.5">Ammonia & Air</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Haber process & composition of air</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">N₂ · H₂ · NH₃ · Equilibrium · 250 atm · 450°C</p>
+      </div>
+
+      <!-- Air Pollution -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the causes, effects and strategies to reduce air pollution including acid rain, global warming and ozone depletion'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2 text-base">🏭</div>
+        <p class="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-0.5">Air Pollution</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">CO, NOₓ, SO₂, acid rain & ozone</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Greenhouse gases · CFCs · Global warming</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Organic Chemistry ── -->
+  <div>
+    <div class="section-pill bg-pink-100 dark:bg-pink-950 text-pink-600 dark:text-pink-300 mb-2">
+      <span>🧬</span> Organic Chemistry
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Hydrocarbons -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain alkanes and alkenes, their reactions and how to distinguish between them'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-950 flex items-center justify-center mb-2 text-base">⛽</div>
+        <p class="text-[10px] font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wide mb-0.5">Hydrocarbons</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Alkanes, alkenes & cracking</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Substitution · Addition · Bromination · Hydration</p>
+      </div>
+
+      <!-- Alcohols & Acids -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain the properties and reactions of alcohols and carboxylic acids including esterification'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-fuchsia-100 dark:bg-fuchsia-950 flex items-center justify-center mb-2 text-base">🍷</div>
+        <p class="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400 uppercase tracking-wide mb-0.5">Alcohols & Acids</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Fermentation, oxidation & esterification</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Ethanol · Ethanoic acid · Ester · Hydrolysis</p>
+      </div>
+
+      <!-- Polymers -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Compare addition polymerisation and condensation polymerisation with examples'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-950 flex items-center justify-center mb-2 text-base">🧵</div>
+        <p class="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide mb-0.5">Polymers</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Addition vs condensation polymerisation</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Nylon · Terylene · Polythene · Teflon · Perspex</p>
+      </div>
+
+      <!-- Petroleum -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='Explain how fractional distillation of petroleum works and the fractions obtained'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950 flex items-center justify-center mb-2 text-base">🛢️</div>
+        <p class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-0.5">Petroleum</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Fractional distillation & fractions</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Petrol · Kerosene · Diesel · Bitumen · Cracking</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION: Qualitative Analysis ── -->
+  <div>
+    <div class="section-pill bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-300 mb-2">
+      <span>🔍</span> Qualitative Analysis
+    </div>
+    <div class="grid grid-cols-2 gap-2.5">
+
+      <!-- Identifying Gases -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='How do I identify the gases H₂, O₂, CO₂, Cl₂, NH₃, SO₂ and H₂O in qualitative analysis?'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-950 flex items-center justify-center mb-2 text-base">💨</div>
+        <p class="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide mb-0.5">Identifying Gases</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Tests for H₂, O₂, CO₂, Cl₂, NH₃</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Observation → Test → Identity</p>
+      </div>
+
+      <!-- Identifying Ions -->
+      <div onclick="toggleChat(true); setTimeout(()=>{ document.getElementById('chat-input').value='How do I identify cations and anions in qualitative analysis using NaOH and NH₃?'; sendMessage(); }, 400)"
+        class="gradient-border card-glow p-3 cursor-pointer">
+        <div class="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center mb-2 text-base">🧫</div>
+        <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-0.5">Identifying Ions</p>
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-snug">Cation & anion tests with NaOH & NH₃</p>
+        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Cu²⁺ · Fe²⁺ · Fe³⁺ · Zn²⁺ · CO₃²⁻ · SO₄²⁻</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Quick Chips ── -->
+  <div>
+    <div class="section-pill bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 mb-2">
+      <span>⚡</span> Quick Ask
+    </div>
+    <div class="flex flex-wrap gap-1.5">
+      <span class="chip" onclick="quickAsk('What is the solubility table and rules I need to memorise?')">💧 Solubility Rules</span>
+      <span class="chip" onclick="quickAsk('List all the ions and their charges from the survival guide')">⚡ Ions & Charges</span>
+      <span class="chip" onclick="quickAsk('What are the colours of common substances and precipitates in QA?')">🎨 Colours in QA</span>
+      <span class="chip" onclick="quickAsk('Explain why the temperature is constant at melting and boiling points')">🌡️ Cooling Curves</span>
+      <span class="chip" onclick="quickAsk('What are the conditions for the Haber process and why are they chosen?')">🏭 Haber Process</span>
+      <span class="chip" onclick="quickAsk('How do I distinguish between strong and weak acids using simple and chemical tests?')">🔬 Strong vs Weak Acid</span>
+      <span class="chip" onclick="quickAsk('Why is galvanising iron better protection than copper coating?')">🛡️ Galvanising</span>
+      <span class="chip" onclick="quickAsk('What are the physical properties and trends down homologous series in organic chemistry?')">📈 Homologous Series</span>
+      <span class="chip" onclick="quickAsk('Explain global warming, acid rain and ozone depletion')">🌍 Climate Issues</span>
+      <span class="chip" onclick="quickAsk('What are the uses of transition metals as catalysts?')">⚙️ TM Catalysts</span>
+      <span class="chip" onclick="quickAsk('How do alloys differ from pure metals in structure and properties?')">🔩 Alloys</span>
+      <span class="chip" onclick="quickAsk('What is the difference between addition and condensation polymerisation?')">🧵 Polymerisation</span>
+    </div>
+  </div>
+
+  <!-- Bottom spacer for FAB -->
+  <div class="h-20"></div>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════
+     FLOATING ACTION BUTTON
+════════════════════════════════════════════════ -->
+<button onclick="toggleChat(true)"
+  class="fixed bottom-5 right-4 z-40 w-14 h-14 rounded-2xl icon-ai shadow-2xl flex items-center justify-center hover:opacity-90 active:scale-95 transition-all">
+  <i data-lucide="message-circle" size="22" class="text-white"></i>
+</button>
+
+<!-- ═══════════════════════════════════════════════
+     CHAT DRAWER
+════════════════════════════════════════════════ -->
+<div id="chat-drawer"
+  class="fixed inset-0 z-50 flex flex-col bg-white dark:bg-darkBg translate-y-full">
+
+  <!-- Drawer Header -->
+  <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-darkCard/95 backdrop-blur-md shrink-0">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-xl icon-ai flex items-center justify-center shadow-md">
+        <span class="text-white text-xs font-black">⚗</span>
+      </div>
+      <div>
+        <p class="text-xs font-black gradient-text">AI Mr Leong</p>
+        <div class="flex items-center gap-1">
+          <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse-dot"></div>
+          <p class="text-[9px] text-slate-400 font-medium">Chemistry Survival Guide · Always ready</p>
+        </div>
+      </div>
+    </div>
+    <button onclick="toggleChat(false)"
+      class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+      <i data-lucide="x" size="14"></i>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div id="chat-messages"
+    class="flex-1 overflow-y-auto px-3 py-3 space-y-3 scrollbar-none">
+
+    <!-- Welcome message -->
+    <div class="flex gap-2 animate-fade-in">
+      <div class="w-7 h-7 rounded-xl icon-ai flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+        <span class="text-white text-[10px] font-black">⚗</span>
+      </div>
+      <div class="flex-1">
+        <div class="bg-slate-50 dark:bg-darkCard rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-xs">
+          <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
+            Hello! I'm AI Mr Leong 👋 I have the full AHS Chemistry Survival Guide loaded. Ask me anything — definitions, answering techniques, reactions, calculations, or exam tips. I'll give you verbatim syllabus answers!
+          </p>
+        </div>
+        <p class="text-[9px] text-slate-400 mt-1 ml-1">AI Mr Leong · Survival Guide v12</p>
+      </div>
     </div>
 
-    <!-- Backdrop overlay when drawer is open -->
-    <div id="chat-backdrop" onclick="toggleChat(false)" class="fixed inset-0 bg-slate-900/40 opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
+  </div>
 
-    <!-- Tiny Footer -->
-    <footer class="mt-4 pb-2 text-center mt-auto">
-        <p class="text-slate-400 dark:text-slate-500 text-[9px] tracking-widest uppercase font-semibold">
-            &copy; 2026 Mr Alaric Leong's A* Chemistry
-        </p>
-    </footer>
+  <!-- Input Bar -->
+  <div class="shrink-0 px-3 py-3 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-darkCard/95 backdrop-blur-md">
+    <div class="flex gap-2 items-end">
+      <div class="flex-1 bg-slate-100 dark:bg-slate-800 rounded-2xl px-3 py-2.5 flex items-end gap-2">
+        <textarea
+          id="chat-input"
+          rows="1"
+          placeholder="Ask anything from the Survival Guide…"
+          class="flex-1 bg-transparent text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 resize-none outline-none leading-relaxed max-h-24 scrollbar-none"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+      </div>
+      <button onclick="sendMessage()"
+        id="send-btn"
+        class="w-9 h-9 rounded-xl icon-ai flex items-center justify-center shrink-0 hover:opacity-90 active:scale-95 transition-all shadow-md">
+        <i data-lucide="send" size="14" class="text-white"></i>
+      </button>
+    </div>
+    <p class="text-[8px] text-slate-400 dark:text-slate-600 text-center mt-1.5">
+      Powered by Claude AI · Answers based on AHS Survival Guide v12
+    </p>
+  </div>
 
-    <script>
-        // Theme Toggle Logic
-        function toggleTheme() {
-            const html = document.documentElement;
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                html.classList.add('light');
-                localStorage.setItem('theme', 'light');
-            } else {
-                html.classList.remove('light');
-                html.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        }
+</div>
 
-        // Initialize user preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-        } else {
-            document.documentElement.classList.add('light');
-            document.documentElement.classList.remove('dark');
-        }
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════ -->
+<script>
+// ── Theme ──────────────────────────────────────
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  lucide.createIcons();
+}
 
-        // Fail-safe Lucide initialization
-        function initLucide() {
-            try {
-                if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                    lucide.createIcons();
-                }
-            } catch (e) {
-                console.warn("Lucide icons load failure bypassed:", e);
-            }
-        }
+// ── Email ──────────────────────────────────────
+function emailMrLeong() {
+  window.location.href = 'mailto:mr.leong@ahs.edu.sg?subject=Chemistry Question';
+}
 
-        window.addEventListener('DOMContentLoaded', () => {
-            initLucide();
-        });
+// ── Chat drawer ────────────────────────────────
+function toggleChat(open) {
+  const drawer = document.getElementById('chat-drawer');
+  if (open) {
+    drawer.style.transform = 'translateY(0)';
+    setTimeout(() => document.getElementById('chat-input').focus(), 400);
+  } else {
+    drawer.style.transform = 'translateY(100%)';
+  }
+}
 
-        let conversationHistory = [];
+// ── Quick ask ──────────────────────────────────
+function quickAsk(question) {
+  toggleChat(true);
+  setTimeout(() => {
+    document.getElementById('chat-input').value = question;
+    sendMessage();
+  }, 400);
+}
 
-        // Your provided production API key
-        const geminiApiKey = "AQ.Ab8RN6LfcVqyMfwF9lkRTaS4rGxuyIK0PZSezsrYQNknIjXNBg";
+// ── Auto-resize textarea ───────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 96) + 'px';
+}
 
-        // System Instruction containing unparaphrased content + strict instructions to act Socratically
-        const systemPrompt = `You are AI Mr Leong, a warm, highly encouraging Socratic Chemistry tutor following rigorous Singapore GCE O/A-Level specifications.
-Your goal is to guide students to exact, unparaphrased syllabus statements by asking leading questions. DO NOT give the full definition straightaway. 
+// ── Handle Enter key ───────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
 
-Rules of interaction:
-1. Always keep explanations structured, encouraging, and highly visual using standard markdown and bullets.
-2. Ask leading questions step-by-step. For instance, if they ask about ionic bonding, don't dump the definition. Ask: "What are the two types of atoms (metals vs non-metals) that usually form ionic bonds, and what happens to their electrons?"
-3. Confirm correct partial answers enthusiastically and guide them to the next parts (e.g., electrostatic forces, lattice structures, melting points).
-4. Once they have arrived at the core understanding, present the verbatim, unparaphrased syllabus standard statement so they can memorize it exactly.
+// ── Append message bubble ──────────────────────
+function appendMessage(role, text) {
+  const container = document.getElementById('chat-messages');
+  const isUser = role === 'user';
 
-Verbatim Syllabus Targets (Guide the student towards these exact wordings):
-- Ionic Bonding: A strong electrostatic force of attraction between oppositely charged ions formed by the complete transfer of one or more electrons from a metal atom to a non-metal atom. Structure: Giant ionic crystal lattice structure. Melting/Boiling Points: High, because a large amount of energy is required to overcome the strong electrostatic forces of attraction holding the oppositely charged ions together in the lattice. Electrical Conductivity: Conducts electricity only in molten or aqueous state when the giant crystal lattice is broken down and mobile ions are free to act as charge carriers. Non-conductor in solid state as ions are held in fixed positions.
-- Covalent Bonding: A bond formed by the sharing of one or more pairs of valence electrons between non-metal atoms to achieve stable noble gas electronic configurations. Structure: Simple molecular structure. Melting/Boiling Points: Low, because minimal thermal energy is needed to overcome the weak intermolecular forces of attraction (van der Waals forces) between the simple molecules. The strong covalent bonds inside the molecules remain unbroken. Electrical Conductivity: Non-conductor of electricity in all states due to the absence of mobile ions or delocalized electrons to carry charge.
-- Kinetics & Collision Theory: For a chemical reaction to occur, reactant particles must collide with each other with correct orientation and with a minimum amount of energy, known as the activation energy (E_a). Factors affecting the rate of reaction: 
-  1. Temperature: Increasing temperature increases the kinetic energy of particles. Particles move faster, increasing collision frequency. Additionally, the fraction of colliding particles with energy greater than or equal to E_a increases, leading to an increased frequency of effective collisions.
-  2. Concentration/Pressure: Increasing concentration or pressure increases the number of reactant particles per unit volume. This increases collision frequency, leading to an increased frequency of effective collisions.
-  3. Surface Area: Decreasing particle size increases total exposed surface area, increasing collision frequency and effective collision frequency.
-  4. Catalyst: Provides an alternative reaction pathway with lower activation energy (E_a). A larger fraction of particles possess energy greater than or equal to this lower E_a, increasing effective collision frequency.
-- Electrolytic Cell: An electrochemical cell that uses electrical energy to drive a non-spontaneous chemical decomposition of an electrolyte. Anode (+): Electrode connected to the positive terminal of the power supply. Oxidation occurs at the anode (AnOx) where anions lose electrons. Cathode (-): Electrode connected to the negative terminal of the power supply. Reduction occurs at the cathode (RedCat) where cations gain electrons. Selective Discharge Rules: Determined by: 1. Position of ion in electrochemical series (lower reactivity ions are preferentially discharged). 2. Concentration of ion in the electrolyte (concentrated anions are preferentially discharged). 3. Nature of the electrode (reactive anodes will dissolve instead of anions discharging).
-- Simple Cell (Voltaic/Galvanic Cell): A device that converts chemical energy into electrical energy using two electrodes of different metals dipped in an electrolyte. Anode (-): The more reactive metal (higher in reactivity series) which oxidizes, loses electrons, and acts as the negative terminal. Cathode (+): The less reactive metal (lower in reactivity series) where reduction occurs, acting as the positive terminal. Voltage: The potential difference (voltage) generated is proportional to the difference in reactivity between the two metals on the reactivity series.
-- Metal Displacement: A redox reaction where a more reactive metal oxidizes to form ions and displaces a less reactive metal from its salt solution by transferring electrons to the less reactive metal cations. Example: Zn(s) + CuSO4(aq) -> ZnSO4(aq) + Cu(s). Zinc is oxidized (Zn -> Zn2+ + 2e-) and acts as the reducing agent. Copper(II) ions are reduced (Cu2+ + 2e- -> Cu) to form reddish-brown copper metal deposits.
-- The Periodic Table: An arrangement of elements in order of increasing proton (atomic) number. Group 1 (Alkali Metals): Reactivity increases down the group. Atomic radius increases, meaning the single valence electron is further from the nucleus and less strongly held, making it easier to lose. Group 17 (Halogens): Reactivity decreases down the group. Atomic radius increases, meaning the nucleus has a weaker attraction for incoming electrons, making it harder to gain one valence electron.
+  const wrapper = document.createElement('div');
+  wrapper.className = `flex gap-2 animate-fade-in ${isUser ? 'flex-row-reverse' : ''}`;
 
-Style Rules:
-Always use standard LaTeX style notation for formulas (e.g. $H_2O$, $Fe^{3+}$, $CO_2$) instead of plain Unicode characters. Ensure a highly supportive, positive classroom tone. Keep answers concise to fit perfectly on standard mobile screen displays without user zoom.`;
+  if (!isUser) {
+    const avatar = document.createElement('div');
+    avatar.className = 'w-7 h-7 rounded-xl icon-ai flex items-center justify-center shrink-0 mt-0.5 shadow-md';
+    avatar.innerHTML = '<span class="text-white text-[10px] font-black">⚗</span>';
+    wrapper.appendChild(avatar);
+  }
 
-        function toggleChat(open) {
-            const drawer = document.getElementById('chat-drawer');
-            const backdrop = document.getElementById('chat-backdrop');
-            if (open) {
-                drawer.classList.remove('translate-y-full');
-                backdrop.classList.remove('opacity-0', 'pointer-events-none');
-                backdrop.classList.add('opacity-100');
-                document.getElementById('chat-input').focus();
-            } else {
-                drawer.classList.add('translate-y-full');
-                backdrop.classList.remove('opacity-100');
-                backdrop.classList.add('opacity-0', 'pointer-events-none');
-            }
-        }
+  const inner = document.createElement('div');
+  inner.className = 'flex-1 flex flex-col ' + (isUser ? 'items-end' : 'items-start');
 
-        function handleKeyDown(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        }
+  const bubble = document.createElement('div');
+  bubble.className = isUser
+    ? 'icon-ai text-white rounded-2xl rounded-tr-sm px-3 py-2.5 max-w-xs'
+    : 'bg-slate-50 dark:bg-darkCard rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-xs md:max-w-sm';
 
-        function quickAsk(text) {
-            document.getElementById('chat-input').value = text;
-            sendMessage();
-        }
+  const p = document.createElement('p');
+  p.className = 'text-xs leading-relaxed ' + (isUser ? 'text-white font-medium' : 'text-slate-700 dark:text-slate-200');
+  p.style.whiteSpace = 'pre-wrap';
+  p.textContent = text;
 
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const query = input.value.trim();
-            if (!query) return;
+  bubble.appendChild(p);
+  inner.appendChild(bubble);
 
-            input.value = "";
+  const meta = document.createElement('p');
+  meta.className = 'text-[9px] text-slate-400 mt-1 ' + (isUser ? 'mr-1' : 'ml-1');
+  meta.textContent = isUser ? 'You' : 'AI Mr Leong · Survival Guide v12';
+  inner.appendChild(meta);
 
-            // Render User Message
-            renderMessage(query, 'user');
+  wrapper.appendChild(inner);
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
+  return bubble;
+}
 
-            // Add loading indicator
-            const loadingId = renderLoadingIndicator();
+// ── Typing indicator ───────────────────────────
+function showTyping() {
+  const container = document.getElementById('chat-messages');
+  const wrapper = document.createElement('div');
+  wrapper.id = 'typing-indicator';
+  wrapper.className = 'flex gap-2 animate-fade-in';
 
-            conversationHistory.push({ role: "user", parts: [{ text: query }] });
+  const avatar = document.createElement('div');
+  avatar.className = 'w-7 h-7 rounded-xl icon-ai flex items-center justify-center shrink-0 mt-0.5 shadow-md';
+  avatar.innerHTML = '<span class="text-white text-[10px] font-black">⚗</span>';
 
-            // Direct AI Pipeline: References embedded data and uses generative Socratic models, avoiding all local pre-programmed answers
-            try {
-                const reply = await callGeminiAPI(conversationHistory);
-                document.getElementById(loadingId)?.remove();
-                renderMessage(reply, 'model');
-                conversationHistory.push({ role: "model", parts: [{ text: reply }] });
-            } catch (err) {
-                console.error(err);
-                document.getElementById(loadingId)?.remove();
-                
-                // Conversational fallback warning in case of connection limits
-                const fallbackReply = `Excellent question! I ran into a brief connection delay while processing. Can you please check your internet connection or try re-submitting your query so we can analyze the step-by-step pathway together? 🧪`;
-                renderMessage(fallbackReply, 'model');
-                conversationHistory.push({ role: "model", parts: [{ text: fallbackReply }] });
-            }
-        }
+  const bubble = document.createElement('div');
+  bubble.className = 'bg-slate-50 dark:bg-darkCard rounded-2xl rounded-tl-sm px-4 py-3';
+  bubble.innerHTML = `
+    <div class="flex gap-1 items-center">
+      <div class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style="animation-delay:0ms"></div>
+      <div class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style="animation-delay:150ms"></div>
+      <div class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style="animation-delay:300ms"></div>
+    </div>`;
 
-        async function callGeminiAPI(contents) {
-            // Evaluates stable available models with client-side API parameters
-            const modelSequence = ["gemini-3.1-flash", "gemini-3-flash-preview", "gemini-1.5-flash"];
-            const keySequence = [geminiApiKey, ""]; // Cascades from key to canvas auto-auth parameters
-            let lastError = null;
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(bubble);
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
+}
 
-            for (const key of keySequence) {
-                for (const model of modelSequence) {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 6500); // 6.5s limit
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
 
-                        const response = await fetch(url, {
-                            method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'x-goog-api-key': key
-                            },
-                            signal: controller.signal,
-                            body: JSON.stringify({
-                                contents: contents,
-                                systemInstruction: { parts: [{ text: systemPrompt }] }
-                            })
-                        });
-                        clearTimeout(timeoutId);
+// ── Conversation history ───────────────────────
+const conversationHistory = [];
 
-                        if (response.ok) {
-                            const result = await response.json();
-                            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                            if (text) return text;
-                        } else {
-                            const errText = await response.text();
-                            console.warn(`Attempt failed with model ${model}:`, errText);
-                        }
-                    } catch (e) {
-                        console.warn(`Error running model ${model}:`, e);
-                        lastError = e;
-                    }
-                }
-            }
-            throw lastError || new Error("Socratic AI session failed.");
-        }
+// ── System prompt with full Survival Guide ─────
+const SYSTEM_PROMPT = `You are AI Mr Leong, a chemistry tutor for AHS (Anderson High School) students. You have the complete AHS Chemistry Survival Guide v12 by Mr Å. Leong (2026) fully loaded. You answer questions verbatim from the Survival Guide where possible, using the exact phrasing, definitions, and answering techniques specified in the guide.
 
-        function renderMessage(text, sender) {
-            const container = document.getElementById('chat-history');
-            const wrapper = document.createElement('div');
-            wrapper.className = `flex items-start gap-2 max-w-[85%] animate-fade-in ${sender === 'user' ? 'ml-auto justify-end' : ''}`;
+IMPORTANT RULES:
+- Always use the exact definitions, phrasing and answering techniques from the Survival Guide
+- Use the keywords marked with ****** as they are critical exam keywords
+- When explaining reactions, use the exact equations from the guide
+- Format answers clearly with numbered points where the guide uses them
+- Always name reactants and products specifically as instructed in the guide
+- Use the OIL RIG / LEO GER mnemonics for redox
+- For rate of reaction answers: discuss factors first then conclude
+- For bonding questions: always confirm ionic or covalent based on data given
 
-            let formattedText = text
-                .replace(/\n/g, '<br>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+FULL SURVIVAL GUIDE CONTENT:
 
-            if (sender === 'user') {
-                wrapper.innerHTML = `
-                    <div class="bg-purple-600 text-white p-2.5 rounded-2xl rounded-tr-none shadow-sm text-xs leading-relaxed">
-                        ${formattedText}
-                    </div>
-                `;
-            } else {
-                wrapper.innerHTML = `
-                    <div class="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                        <span class="text-[9px] font-bold text-white">L</span>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
-                        ${formattedText}
-                    </div>
-                `;
-            }
+=== SEPARATION & PURIFICATION ===
+Always remember a SERIES OF STEPS IS NEEDED (NOT JUST 1 SINGLE STEP!!!!) TO OBTAIN THE PURE SAMPLE!!
+A pure substance will have: a fixed and constant b.p./m.p. (Mixtures will have a range) and will only have 1 "spot" on a chromatogram.
 
-            container.appendChild(wrapper);
-            container.scrollTop = container.scrollHeight;
+CHROMATOGRAPHY:
+1. Locating agent reacts with the colourless spots to form coloured/visible spots which can be observed from the chromatogram.
+2. The baseline is drawn with a pencil as graphite in pencil lead does not dissolve in most solvents and hence will not interfere with the spots on the chromatogram.
+3. The start line is above the level of the solvent to prevent the sample from dissolving in the solvent and not be separated out.
+4. The spots are made small to prevent the analytes from interfering with each other and become unclear.
+5. The solvent front must be near the top (edge) of the paper to ensure complete separation of all the components of the analytes on the chromatogram.
 
-            // Render LaTeX Math symbols securely
-            try {
-                if (typeof renderMathInElement !== 'undefined') {
-                    renderMathInElement(wrapper, {
-                        delimiters: [
-                            {left: '$$', right: '$$', display: true},
-                            {left: '$', right: '$', display: false}
-                        ],
-                        throwOnError : false
-                    });
-                }
-            } catch (e) {
-                console.warn("KaTeX dynamic rendering bypassed:", e);
-            }
-        }
+Types of mixtures and separation methods:
+- Solid-solid with magnetic properties → Magnetic separation
+- Solid-solid where one sublimes → Sublimation
+- Solid-liquid (insoluble in H₂O) → Filtration
+- Solid-liquid (soluble in H₂O) → Dissolve then filtration
+- Liquid-liquid immiscible with different densities → Separating funnel (Working principle: Diff density of immiscible liquids)
+- Liquid-liquid miscible → Paper chromatography (Working principle: Diff solubilities in same solvent) or Fractional/Simple distillation (Working principle: Diff b.p. of miscible liquids)
 
-        function renderLoadingIndicator() {
-            const container = document.getElementById('chat-history');
-            const indicatorId = 'ai-loading-' + Date.now();
-            const wrapper = document.createElement('div');
-            wrapper.id = indicatorId;
-            wrapper.className = "flex items-start gap-2 max-w-[85%] animate-pulse";
-            wrapper.innerHTML = `
-                <div class="w-6 h-6 rounded bg-purple-300 dark:bg-purple-900 text-white flex items-center justify-center shrink-0 mt-0.5">
-                    <span class="text-[9px] font-bold text-white">L</span>
-                </div>
-                <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2.5 rounded-2xl rounded-tl-none shadow-sm text-xs text-slate-400 dark:text-slate-500 space-y-1.5 min-w-[100px]">
-                    <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                    <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded w-24"></div>
-                </div>
-            `;
-            container.appendChild(wrapper);
-            container.scrollTop = container.scrollHeight;
-            return indicatorId;
-        }
+Rf = DA/DS (Answer in 3sf, not fraction!)
+Miscible: Soluble in each other to form a homogeneous solution.
 
-        function emailMrLeong() {
-            const recipient = "leong_keng_wah_alaric@moe.edu.sg";
-            const subject = "Unresolved Chemistry Inquiry - AI Mr Leong Chat Log";
-            
-            let bodyText = "Dear Mr Leong,\n\nMy queries on the interactive chemistry dashboard were not answered adequately by the AI Assistant.\n\nPlease find the detailed session log below:\n\n";
-            bodyText += "==================================================\n";
-            bodyText += "                 AI TUTOR CHAT LOG                \n";
-            bodyText += "==================================================\n\n";
+Gas collection (Factors: Solubility & Density):
+- Downward delivery: Gas soluble in water, denser than air
+- Displacement of water: Gas insoluble in water
+- Upward delivery: Gas soluble in water, less dense than air
 
-            if (conversationHistory.length === 0) {
-                bodyText += "[No questions were submitted during this session.]\n";
-            } else {
-                conversationHistory.forEach((msg, index) => {
-                    const roleLabel = msg.role === 'user' ? "Student Question" : "AI Mr Leong Response";
-                    
-                    const cleanResponseText = msg.parts[0].text
-                        .replace(/<br\s*\/?>/gi, '\n') 
-                        .replace(/<[^>]*>/g, '')       
-                        .replace(/&rarr;/g, '->')
-                        .replace(/&deg;/g, '°');
+=== CALCULATIONS ===
+No. of moles = Mass/Mr = No. of particles/(6×10²³) = Vol.(in dm³)/24 dm³ = (Conc. × vol.)
 
-                    bodyText += `[${index + 1}] ${roleLabel}:\n${cleanResponseText}\n\n`;
-                    bodyText += "--------------------------------------------------\n\n";
-                });
-            }
+Note: In any calculations, compare the number of moles, not mass or volume!
+Also take note of limiting reagents even if the Q didn't specify as well! Never assume the quantities given are exact.
 
-            bodyText += "==================================================\n\n";
-            bodyText += "Could you please assist me with my queries when you are free?\n\nThank you,\n[Student Name]";
+1 dm³ = 1000 cm³; 1 cm³ = 1/1000 dm³; 1 tonne = 1000 kg = 1000000 g
 
-            const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
-            
-            try {
-                const anchor = document.createElement('a');
-                anchor.href = mailtoUrl;
-                anchor.target = "_blank";
-                document.body.appendChild(anchor);
-                anchor.click();
-                document.body.removeChild(anchor);
-            } catch (err) {
-                console.error("Failed to invoke mail system:", err);
-            }
-        }
+Steps for stoichiometry:
+1. Calc. no. of moles based on values given
+2. Compare mole ratio & identify limiting reagent (if necessary)
+3. Use no. of moles of LR and apply formula to find quantity needed
 
-        // Initial setup for introductory messages
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                try {
-                    if (typeof renderMathInElement !== 'undefined') {
-                        renderMathInElement(document.getElementById('chat-history'), {
-                            delimiters: [
-                                {left: '$$', right: '$$', display: true},
-                                {left: '$', right: '$', display: false}
-                            ],
-                            throwOnError : false
-                        });
-                    }
-                } catch (e) {
-                    console.warn("KaTeX load initialization bypassed:", e);
-                }
-            }, 500);
-        });
-    </script>
-</body>
-</html>
+Percentage purity = (Mass of pure portion of sample / Mass of sample with impurities) × 100
+Percentage yield = (Mass of sample obtained (actual yield) / Mass of experimental yield (expected)) × 100
+
+For empirical/molecular formula:
+- Find mass/% composition
+- Divide by Ar to get moles
+- Divide by smallest to get simplest ratio → Empirical formula
+- n = Mass of whole molecule / Mass of 1 unit (from emp formula) → Molecular formula = (ABC)n
+
+=== ATOMIC STRUCTURE ===
+Position | Particle | Relative mass | Charge
+In energy shell | Electrons | 1/1840 | 1-
+In nucleus | Protons | 1 | 1+
+In nucleus | Neutrons | 1 | 0
+
+Definitions:
+- Isotopes are atoms of the same element with the same number of protons (DO NOT INCLUDE ELECTRONS HERE) but different number of neutrons. (State numbers if provided)
+- Allotropes are different forms of the same element in the same physical state.
+
+Finding Mr: The Mr is not a whole number because it is a weighted average of the masses of the isotopes.
+Example: (75/100 × 35) + (25/100 × 37) = 26.25 + 9.25 = 35.5
+
+=== KINETIC PARTICLE THEORY ===
+Property | Solid | Liquid | Gas
+Packing | Very close/Tightly packed and orderly arranged | Close/Less tightly packed and disorderly arranged | Far apart and random arrangement
+Movement | Vibrate about fixed position | Vibrate, slide past one another, move throughout the liquid | Move freely at high speed
+Energy of particles | Least energy | More energy than solid, but less than gas | Highest energy
+Forces of attraction | Strong forces | Stronger forces than gas particles, but lesser than solid | Negligible
+Rate of diffusion | Slowest | Faster than solid | Fastest
+
+Brownian motion: The random/erratic/zigzag motion of particles suspended in a fluid (liquid or gas) due to collisions with the fast-moving molecules of the fluid.
+
+Diffusion: The net movement of particles from a region of higher concentration to a region of lower concentration due to the random motion of particles.
+
+Effusion: The process by which gas particles pass through a tiny hole into a vacuum.
+
+Changes of state:
+- Melting: Solid → Liquid (energy absorbed to overcome forces of attraction)
+- Boiling/Evaporation: Liquid → Gas (energy absorbed to overcome forces of attraction)
+- Condensation: Gas → Liquid (energy released as forces of attraction form)
+- Freezing: Liquid → Solid (energy released as forces of attraction form)
+- Sublimation: Solid → Gas directly
+
+During melting/boiling: Temperature remains constant as energy absorbed is used to overcome forces of attraction between particles, NOT to increase kinetic energy of particles.
+
+=== BONDING ===
+IONIC BONDING:
+- Ionic bond: The electrostatic force of attraction between oppositely charged ions.
+- Ionic compounds are formed between metals and non-metals.
+- Metal atoms LOSE electrons to form positive ions (cations).
+- Non-metal atoms GAIN electrons to form negative ions (anions).
+
+Properties of ionic compounds:
+1. High melting and boiling points: Strong electrostatic forces of attraction between oppositely charged ions require a large amount of energy to overcome.
+2. Conduct electricity when molten or dissolved in water: Ions are free to move and carry charge. (Do NOT conduct in solid state as ions are held in fixed positions in the lattice.)
+3. Soluble in water (generally): Water molecules are able to pull apart the ions from the lattice.
+4. Brittle: When a force is applied, layers of ions shift so that like charges align, causing repulsion and the crystal shatters.
+
+COVALENT BONDING:
+- Covalent bond: The electrostatic force of attraction between the shared pair(s) of electrons and the nuclei of the bonded atoms.
+- Formed between non-metals.
+
+Simple molecular structures:
+1. Low melting and boiling points: Weak intermolecular forces of attraction between molecules require little energy to overcome. (Note: Covalent bonds within molecules are NOT broken during melting/boiling.)
+2. Do NOT conduct electricity: No free electrons or ions to carry charge.
+3. Generally insoluble in water (except polar molecules like HCl, NH₃).
+
+Giant covalent structures (e.g. Diamond, Graphite, Silicon dioxide):
+Diamond:
+- Each carbon atom is bonded to 4 other carbon atoms in a tetrahedral arrangement.
+- Very high m.p./b.p.: Many strong covalent bonds require a large amount of energy to break.
+- Does not conduct electricity: No free electrons or ions.
+- Very hard: Strong covalent bonds in a rigid 3D network.
+
+Graphite:
+- Each carbon atom is bonded to 3 other carbon atoms in layers of hexagonal rings.
+- Delocalised electrons between layers.
+- Conducts electricity: Delocalised electrons are free to move and carry charge.
+- Soft and slippery: Layers are held together by weak intermolecular forces and can slide over each other.
+- High m.p./b.p.: Many strong covalent bonds within layers require a large amount of energy to break.
+
+METALLIC BONDING:
+- Metallic bond: The electrostatic force of attraction between the positive metal ions (cations) and the sea of delocalised electrons.
+Properties:
+1. Conduct electricity: Delocalised electrons are free to move and carry charge.
+2. High m.p./b.p.: Strong metallic bonds require a large amount of energy to overcome.
+3. Malleable and ductile: Layers of metal ions can slide over each other without breaking the metallic bond.
+4. Alloys are harder than pure metals: Atoms of different sizes distort the regular arrangement, making it harder for layers to slide.
+
+=== ACIDS, BASES & SALTS ===
+Acid: A substance that produces hydrogen ions (H⁺) as the only positive ions when dissolved in water.
+Base: A substance that neutralises an acid to form salt and water only.
+Alkali: A base that is soluble in water, producing hydroxide ions (OH⁻) in solution.
+
+Strong acids: HCl, H₂SO₄, HNO₃ (fully dissociated)
+Weak acids: CH₃COOH, H₂CO₃, H₂SO₃ (partially dissociated)
+Strong alkalis: NaOH, KOH, Ca(OH)₂
+Weak alkalis: NH₃(aq)
+
+pH scale: 0–6 acidic, 7 neutral, 8–14 alkaline.
+
+Reactions of acids:
+1. Acid + Metal → Salt + Hydrogen
+   e.g. Zn + H₂SO₄ → ZnSO₄ + H₂
+2. Acid + Metal oxide → Salt + Water
+   e.g. CuO + 2HCl → CuCl₂ + H₂O
+3. Acid + Metal hydroxide → Salt + Water
+   e.g. NaOH + HCl → NaCl + H₂O
+4. Acid + Metal carbonate → Salt + Water + Carbon dioxide
+   e.g. CaCO₃ + 2HCl → CaCl₂ + H₂O + CO₂
+5. Acid + Ammonia → Ammonium salt
+   e.g. NH₃ + HCl → NH₄Cl
+
+Naming salts:
+- HCl → Chloride
+- H₂SO₄ → Sulphate
+- HNO₃ → Nitrate
+- H₃PO₄ → Phosphate
+- H₂CO₃ → Carbonate
+
+Preparation of salts:
+INSOLUBLE SALTS → Precipitation (mix two soluble solutions)
+SOLUBLE SALTS:
+- Salt of reactive metal (Na, K, Ca) → Titration (acid + alkali)
+- Salt of less reactive metal → Excess solid method (acid + excess metal/metal oxide/metal carbonate, then filter off excess)
+
+Solubility rules:
+- All nitrates: SOLUBLE
+- All sodium, potassium, ammonium salts: SOLUBLE
+- All chlorides: SOLUBLE except AgCl, PbCl₂
+- All sulphates: SOLUBLE except BaSO₄, PbSO₄, CaSO₄ (slightly soluble)
+- All carbonates: INSOLUBLE except Na₂CO₃, K₂CO₃, (NH₄)₂CO₃
+- All hydroxides: INSOLUBLE except NaOH, KOH, Ca(OH)₂ (slightly soluble)
+
+=== RATE OF REACTION ===
+Rate of reaction: The change in concentration of reactants or products per unit time.
+
+Factors affecting rate of reaction:
+1. Concentration (solutions): Higher concentration → More particles per unit volume → Higher frequency of effective collisions → Faster rate.
+2. Pressure (gases): Higher pressure → Particles closer together → Higher frequency of effective collisions → Faster rate.
+3. Temperature: Higher temperature → Particles have more kinetic energy → Move faster → Higher frequency of collisions AND more collisions exceed activation energy → Faster rate.
+4. Surface area: Smaller particle size → Larger surface area → More particles exposed → Higher frequency of effective collisions → Faster rate.
+5. Catalyst: Provides an alternative reaction pathway with lower activation energy → More collisions exceed activation energy → Faster rate. (Catalyst is NOT consumed in the reaction.)
+6. Light (photochemical reactions): Provides energy to initiate the reaction.
+
+Activation energy: The minimum energy required for a reaction to occur.
+
+Collision theory: For a reaction to occur, particles must collide with sufficient energy (≥ activation energy) and correct orientation.
+
+=== EQUILIBRIUM ===
+Dynamic equilibrium: A state in which the rate of the forward reaction equals the rate of the reverse reaction, and the concentrations of reactants and products remain constant.
+
+Le Chatelier's Principle: When a system in dynamic equilibrium is subjected to a change, the system will shift in a direction to oppose/counteract that change.
+
+Effect of changes:
+1. Increase concentration of reactant → Equilibrium shifts RIGHT (forward) to use up excess reactant.
+2. Increase concentration of product → Equilibrium shifts LEFT (reverse) to use up excess product.
+3. Increase temperature → Equilibrium shifts in the ENDOTHERMIC direction to absorb excess heat.
+4. Decrease temperature → Equilibrium shifts in the EXOTHERMIC direction to release heat.
+5. Increase pressure → Equilibrium shifts towards the side with FEWER moles of gas.
+6. Decrease pressure → Equilibrium shifts towards the side with MORE moles of gas.
+7. Catalyst → Does NOT shift equilibrium position; only speeds up rate of attainment of equilibrium.
+
+=== ENERGY CHANGES ===
+Exothermic reaction: A reaction that releases energy to the surroundings. Temperature of surroundings INCREASES. ΔH is negative.
+Examples: Combustion, neutralisation, respiration, oxidation of metals.
+
+Endothermic reaction: A reaction that absorbs energy from the surroundings. Temperature of surroundings DECREASES. ΔH is positive.
+Examples: Thermal decomposition, photosynthesis, dissolving ammonium nitrate.
+
+Bond breaking: ENDOTHERMIC (energy absorbed).
+Bond forming: EXOTHERMIC (energy released).
+
+ΔH = Energy absorbed (bond breaking) − Energy released (bond forming)
+If ΔH < 0 → Exothermic
+If ΔH > 0 → Endothermic
+
+Fuels and energy:
+- Fossil fuels: Coal, petroleum, natural gas.
+- Hydrogen as a fuel: Clean (only product is water), but difficult to store and transport, explosive, requires energy to produce.
+
+=== PERIODIC TABLE ===
+Groups: Vertical columns. Elements in the same group have the same number of valence electrons and similar chemical properties.
+Periods: Horizontal rows. Elements in the same period have the same number of electron shells.
+
+Group 1 – Alkali Metals (Li, Na, K):
+- Soft metals, low density, low m.p.
+- React vigorously with water: 2Na + 2H₂O → 2NaOH + H₂
+- Reactivity INCREASES down the group: Outer electron is further from nucleus, less energy needed to lose it.
+- Stored in oil to prevent reaction with air and water.
+
+Group 7 – Halogens (F, Cl, Br, I):
+- Diatomic molecules (F₂, Cl₂, Br₂, I₂).
+- Reactivity DECREASES down the group: Harder to gain an electron as atomic radius increases and electron shielding increases.
+- Displacement reactions: A more reactive halogen displaces a less reactive halogen from its salt solution.
+  e.g. Cl₂ + 2KBr → 2KCl + Br₂ (Cl₂ is more reactive than Br₂)
+- Colour: F₂ (pale yellow), Cl₂ (yellow-green), Br₂ (orange-brown), I₂ (grey-black solid/purple vapour).
+
+Group 0 – Noble Gases (He, Ne, Ar):
+- Full outer electron shell → Very stable → Unreactive/inert.
+- Monatomic gases.
+- Used in: He (balloons, airships), Ne (advertising signs), Ar (filling light bulbs, inert atmosphere for welding).
+
+Transition metals:
+- High m.p., high density, hard.
+- Form coloured compounds.
+- Can form ions of variable oxidation states (e.g. Fe²⁺, Fe³⁺; Cu⁺, Cu²⁺).
+- Used as catalysts (e.g. Fe in Haber process, Ni in hydrogenation, MnO₂ in decomposition of H₂O₂, V₂O₅ in Contact process).
+
+=== METALS ===
+Reactivity series (most to least reactive):
+K > Na > Ca > Mg > Al > Zn > Fe > Ni > Sn > Pb > H > Cu > Ag > Au > Pt
+
+Reactions of metals:
+1. With water: K, Na, Ca react vigorously. Mg reacts slowly with cold water, quickly with steam. Al, Zn, Fe react with steam only.
+2. With dilute acid: Metals above H react. K, Na, Ca too vigorous (dangerous). Cu, Ag, Au do not react.
+3. With oxygen: Most metals form metal oxides. 4Na + O₂ → 2Na₂O; 2Mg + O₂ → 2MgO.
+
+Extraction of metals:
+- Very reactive (K, Na, Ca, Mg, Al): Electrolysis.
+- Moderately reactive (Zn, Fe, Sn, Pb): Reduction with carbon/carbon monoxide.
+- Unreactive (Cu, Ag, Au, Pt): Found native or simple heating.
+
+Blast furnace (extraction of iron):
+Raw materials: Iron ore (haematite, Fe₂O₃), coke (C), limestone (CaCO₃), hot air.
+Reactions:
+1. C + O₂ → CO₂
+2. CO₂ + C → 2CO
+3. Fe₂O₃ + 3CO → 2Fe + 3CO₂ (main reduction)
+4. CaCO₃ → CaO + CO₂ (limestone decomposes)
+5. CaO + SiO₂ → CaSiO₃ (slag formation – removes acidic impurity SiO₂)
+
+Rusting of iron:
+Conditions needed: Water AND oxygen (both required).
+Prevention methods:
+1. Painting/coating with oil or grease: Barrier method – prevents contact with water and oxygen.
+2. Galvanising (zinc coating): Barrier AND sacrificial protection – zinc is more reactive than iron, so zinc corrodes preferentially.
+3. Sacrificial protection (attaching zinc/magnesium blocks): More reactive metal corrodes preferentially, protecting iron.
+4. Electroplating with less reactive metal (e.g. tin): Barrier method only – if coating is scratched, iron corrodes faster.
+5. Stainless steel (alloying with Cr and Ni): Chromium forms a protective oxide layer.
+
+=== REDOX ===
+OIL RIG:
+- OIL: Oxidation Is Loss (of electrons)
+- RIG: Reduction Is Gain (of electrons)
+
+LEO GER:
+- LEO: Loss of Electrons = Oxidation
+- GER: Gain of Electrons = Reduction
+
+Oxidation states rules:
+1. Pure element: OS = 0
+2. Monatomic ion: OS = charge of ion
+3. H in compounds: +1 (except metal hydrides where H = −1)
+4. O in compounds: −2 (except peroxides where O = −1, and OF₂ where O = +2)
+5. F always: −1
+6. Sum of OS in neutral compound = 0
+7. Sum of OS in polyatomic ion = charge of ion
+
+Oxidising agent (OA): A substance that oxidises another substance and is itself REDUCED (gains electrons).
+Reducing agent (RA): A substance that reduces another substance and is itself OXIDISED (loses electrons).
+
+Common oxidising agents: KMnO₄ (acidified), K₂Cr₂O₇ (acidified), Cl₂, O₂, H₂O₂, concentrated H₂SO₄, HNO₃.
+Common reducing agents: Metals (Na, Mg, Zn, Fe), H₂, CO, C, SO₂, H₂S, Fe²⁺, I⁻.
+
+Half equations:
+- Oxidation half equation: Shows loss of electrons (electrons on RIGHT side).
+  e.g. Zn → Zn²⁺ + 2e⁻
+- Reduction half equation: Shows gain of electrons (electrons on LEFT side).
+  e.g. Cu²⁺ + 2e⁻ → Cu
+
+To combine half equations: Ensure electrons cancel (multiply if necessary), then add.
+
+KMnO₄ in acidic solution: MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O (purple → colourless)
+K₂Cr₂O₇ in acidic solution: Cr₂O₇²⁻ + 14H⁺ + 6e⁻ → 2Cr³⁺ + 7H₂O (orange → green)
+
+=== ELECTROLYSIS ===
+Electrolysis: The decomposition of an ionic compound (in molten state or aqueous solution) by the passage of electricity.
+
+Electrolyte: An ionic compound that conducts electricity in molten state or aqueous solution.
+Anode: Positive electrode. Connected to positive terminal of battery. OXIDATION occurs (OIL). Anions (negative ions) move towards anode.
+Cathode: Negative electrode. Connected to negative terminal of battery. REDUCTION occurs (RIG). Cations (positive ions) move towards cathode.
+
+Discharge at electrodes:
+CATHODE (reduction – cations discharged):
+- If Cu²⁺ present: Cu²⁺ + 2e⁻ → Cu (copper deposited)
+- If H⁺ present (from acid or water): 2H⁺ + 2e⁻ → H₂ (hydrogen gas evolved)
+- If Na⁺, K⁺, Ca²⁺, Mg²⁺, Al³⁺ present in aqueous solution: H⁺ from water is discharged instead (these metals are too reactive).
+
+ANODE (oxidation – anions discharged):
+- If Cl⁻, Br⁻, I⁻ present in HIGH concentration: Halide ion discharged.
+  e.g. 2Cl⁻ → Cl₂ + 2e⁻
+- If SO₄²⁻, NO₃⁻, OH⁻ from water present (dilute solution): OH⁻ from water is discharged.
+  4OH⁻ → 2H₂O + O₂ + 4e⁻
+- If REACTIVE anode (e.g. copper anode): Anode dissolves. Cu → Cu²⁺ + 2e⁻
+
+Electrochemical series (ECS) – order of discharge at cathode (easiest to hardest to discharge):
+Ag⁺ > Cu²⁺ > H⁺ > Zn²⁺ > Fe²⁺ > Al³⁺ > Mg²⁺ > Na⁺ > Ca²⁺ > K⁺
+
+Simple cells:
+- Two different metals connected by a wire and electrolyte.
+- More reactive metal: Negative electrode (anode) – oxidised, loses mass.
+- Less reactive metal: Positive electrode (cathode) – reduction occurs.
+- Voltage depends on difference in reactivity: Greater difference → Higher voltage.
+
+Hydrogen fuel cell:
+- Anode: H₂ → 2H⁺ + 2e⁻ (oxidation)
+- Cathode: O₂ + 4H⁺ + 4e⁻ → 2H₂O (reduction)
+- Overall: 2H₂ + O₂ → 2H₂O
+- Advantages: Only product is water (clean), efficient, no combustion.
+- Disadvantages: H₂ is explosive, difficult to store and transport, expensive to produce, requires platinum catalyst.
+
+=== ATMOSPHERE & ENVIRONMENT ===
+Composition of clean dry air: ~78% N₂, ~21% O₂, ~0.04% CO₂, ~0.9% Ar, traces of other noble gases.
+
+Air pollutants and effects:
+1. Carbon monoxide (CO): From incomplete combustion of fossil fuels. Toxic – binds to haemoglobin, reducing oxygen-carrying capacity of blood.
+2. Sulphur dioxide (SO₂): From burning fossil fuels containing sulphur. Causes acid rain (SO₂ + H₂O → H₂SO₃). Irritates respiratory system.
+3. Oxides of nitrogen (NOₓ): From lightning or high-temperature combustion in car engines. Causes acid rain (4NO₂ + O₂ + 2H₂O → 4HNO₃). Causes photochemical smog.
+4. Carbon dioxide (CO₂): From combustion of fossil fuels. Greenhouse gas – contributes to global warming/enhanced greenhouse effect.
+5. Methane (CH₄): From decomposition of organic matter, livestock. Greenhouse gas.
+6. CFCs (chlorofluorocarbons): From aerosols, refrigerants. Destroy ozone layer – Cl radicals catalyse decomposition of O₃.
+7. Unburnt hydrocarbons: From incomplete combustion. Contribute to photochemical smog.
+
+Acid rain effects: Corrodes buildings/statues (especially limestone/marble – CaCO₃), kills aquatic life, damages forests, corrodes metals.
+
+Greenhouse effect: CO₂, CH₄, H₂O vapour trap heat (infrared radiation) re-radiated from Earth's surface → Global warming → Rising sea levels, extreme weather, habitat loss.
+
+Ozone depletion: CFCs release Cl radicals in stratosphere → Cl + O₃ → ClO + O₂; ClO + O → Cl + O₂ (Cl is regenerated – acts as catalyst).
+
+Haber process (synthesis of ammonia):
+N₂ + 3H₂ ⇌ 2NH₃ (ΔH = −92 kJ/mol, exothermic)
+Conditions: 450°C, 200–250 atm, iron catalyst.
+Compromise conditions:
+- Temperature: 450°C is a compromise. Higher T → Faster rate but lower yield (equilibrium shifts left, exothermic). Lower T → Higher yield but too slow.
+- Pressure: 200–250 atm is a compromise. Higher P → Higher yield (fewer moles of gas on right) and faster rate, but expensive and dangerous.
+- Catalyst (Fe): Speeds up rate of attainment of equilibrium without affecting equilibrium position.
+
+Contact process (synthesis of sulphuric acid):
+Step 1: S + O₂ → SO₂
+Step 2: 2SO₂ + O₂ ⇌ 2SO₃ (450°C, 1–2 atm, V₂O₅ catalyst)
+Step 3: SO₃ + H₂SO₄ → H₂S₂O₇ (oleum); H₂S₂O₇ + H₂O → 2H₂SO₄
+
+=== ORGANIC CHEMISTRY ===
+Homologous series: A family of compounds with the same general formula, same functional group, similar chemical properties, and showing a gradual change in physical properties.
+
+Alkanes (CₙH₂ₙ₊₂):
+- Saturated hydrocarbons (single bonds only).
+- Relatively unreactive (strong C–C and C–H bonds).
+- Reactions: Combustion, substitution with halogens (in UV light).
+  e.g. CH₄ + Cl₂ → CH₃Cl + HCl
+Alkenes (CₙH₂ₙ):
+- Unsaturated hydrocarbons (contain at least one C=C double bond).
+- More reactive than alkanes due to the C=C double bond.
+- Reactions: Combustion, addition reactions (H₂, Cl₂, Br₂, HCl, H₂O).
+  e.g. CH₂=CH₂ + Br₂ → CH₂BrCH₂Br (decolourises bromine water – test for unsaturation)
+       CH₂=CH₂ + H₂O → CH₃CH₂OH (hydration: 300°C, phosphoric acid catalyst)
+- Addition polymerisation: Monomers with C=C join to form a long-chain polymer.
+  e.g. nCH₂=CH₂ → (–CH₂–CH₂–)ₙ  [poly(ethene)]
+
+Test for alkenes: Add bromine water → decolourises (orange/brown to colourless) if C=C present.
+Alkanes do NOT decolourise bromine water.
+
+Alcohols (CₙH₂ₙ₊₁OH):
+- Functional group: –OH (hydroxyl group).
+- Reactions:
+  1. Combustion: CH₃CH₂OH + 3O₂ → 2CO₂ + 3H₂O
+  2. Oxidation (acidified KMnO₄ or K₂Cr₂O₇): Alcohol → Carboxylic acid
+     e.g. CH₃CH₂OH → CH₃COOH (ethanol → ethanoic acid; orange → green for K₂Cr₂O₇)
+  3. Dehydration (conc. H₃PO₄, ~180°C): Alcohol → Alkene + Water
+     e.g. CH₃CH₂OH → CH₂=CH₂ + H₂O
+  4. Reaction with sodium: 2ROH + 2Na → 2RONa + H₂↑
+  5. Esterification (conc. H₂SO₄ catalyst, heat):
+     Alcohol + Carboxylic acid ⇌ Ester + Water
+
+Production of ethanol:
+  (a) Fermentation: C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂
+      (yeast, 25–37°C, anaerobic conditions, aqueous solution)
+      - Renewable, but slow, produces dilute ethanol, requires distillation to purify.
+  (b) Hydration of ethene: CH₂=CH₂ + H₂O → CH₃CH₂OH
+      (300°C, 60–70 atm, phosphoric acid catalyst)
+      - Fast, continuous process, pure product, but uses non-renewable fossil fuels.
+
+Carboxylic Acids (CₙH₂ₙ₊₁COOH):
+- Functional group: –COOH (carboxyl group).
+- Weak acids – partially dissociate in water.
+- Reactions:
+  1. With carbonates: 2CH₃COOH + Na₂CO₃ → 2CH₃COONa + H₂O + CO₂↑
+  2. With alcohols (esterification): CH₃COOH + C₂H₅OH ⇌ CH₃COOC₂H₅ + H₂O
+     (conc. H₂SO₄ catalyst, heat; reversible reaction)
+
+Esters:
+- Functional group: –COO–
+- Named: alkyl alkanoate (e.g. ethyl ethanoate from ethanol + ethanoic acid).
+- Sweet/fruity smell; used as flavourings and perfumes.
+- Hydrolysis (reverse of esterification): Ester + Water ⇌ Alcohol + Carboxylic acid
+  (acid catalyst or alkali; alkali hydrolysis is irreversible – produces carboxylate salt)
+
+Macromolecules:
+
+Addition polymers:
+- Formed from alkene monomers via addition polymerisation (no other product formed).
+- e.g. poly(ethene), poly(propene), poly(chloroethene)/PVC, poly(tetrafluoroethene)/PTFE.
+- To identify monomer from polymer: Find the repeating unit and add a C=C double bond.
+- To identify polymer from monomer: Remove the C=C and link repeating units.
+
+Condensation polymers:
+- Formed when monomers join with the loss of a small molecule (usually H₂O or HCl).
+- Two types of functional groups react with each other.
+
+Polyesters (e.g. Terylene/PET):
+- Formed from a diol (–OH at both ends) + a dicarboxylic acid (–COOH at both ends).
+- Linkage: –COO– (ester linkage).
+- e.g. HO–(CH₂)₂–OH + HOOC–C₆H₄–COOH → polyester + H₂O
+
+Polyamides (e.g. Nylon, Proteins):
+- Formed from a diamine (–NH₂ at both ends) + a dicarboxylic acid (–COOH at both ends).
+- Linkage: –CONH– (amide linkage), also called peptide linkage in proteins.
+- e.g. H₂N–(CH₂)₆–NH₂ + HOOC–(CH₂)₄–COOH → Nylon-6,6 + H₂O
+
+Proteins:
+- Natural polyamides formed from amino acid monomers.
+- Each amino acid has an –NH₂ group and a –COOH group.
+- Joined by peptide (amide) bonds with loss of water.
+- Hydrolysis of proteins (acid/alkali/enzymes) → amino acids.
+
+DNA:
+- Natural condensation polymer made of nucleotide monomers.
+- Each nucleotide contains a sugar, a phosphate group, and a nitrogenous base.
+
+Fats and oils (lipids):
+- Esters of glycerol (a triol) and three fatty acid molecules → triglycerides.
+- Formed by condensation (loss of 3H₂O); hydrolysed back to glycerol + fatty acids.
+- Saturated fats: Only single C–C bonds in fatty acid chains; solid at room temperature.
+- Unsaturated fats/oils: Contain C=C double bonds; liquid at room temperature.
+- Hydrogenation of oils (H₂, Ni catalyst, ~60°C): Converts unsaturated oils to saturated fats
+  (e.g. making margarine from vegetable oil).
+
+Crude oil and fractional distillation:
+- Crude oil is a mixture of hydrocarbons (mainly alkanes) of different chain lengths.
+- Separated by fractional distillation based on differences in boiling points.
+- Fractions (from top/lowest b.p. to bottom/highest b.p.):
+  Refinery gas → Gasoline/Petrol → Naphtha → Kerosene/Jet fuel →
+  Diesel/Gas oil → Fuel oil → Bitumen/Residue
+
+Trends in fractions:
+- Shorter chain → Lower boiling point, lower viscosity, more flammable, more volatile, lighter colour.
+- Longer chain → Higher boiling point, higher viscosity, less flammable, less volatile, darker colour.
+
+Cracking:
+- Breaking down large, less useful hydrocarbon molecules into smaller, more useful ones.
+- Products always include at least one alkene (used for making polymers) and a shorter alkane.
+- e.g. C₁₅H₃₂ → C₈H₁₈ + C₃H₆ + C₄H₈
+- Thermal cracking: High temperature (~500°C), high pressure.
+- Catalytic cracking: Lower temperature (~450°C), zeolite catalyst, atmospheric pressure.
+
+=== EXPERIMENTAL CHEMISTRY ===
+
+Separation techniques:
+1. Filtration: Separates insoluble solid from liquid/solution.
+2. Evaporation/Crystallisation: Separates soluble solid from solution.
+   - Evaporation to dryness: For thermally stable salts (e.g. NaCl).
+   - Crystallisation: For thermally unstable salts (e.g. CuSO₄·5H₂O); evaporate to
+     saturated solution, cool to crystallise, filter, dry between filter papers.
+3. Simple distillation: Separates solvent from solution (e.g. water from salt solution).
+4. Fractional distillation: Separates miscible liquids with different boiling points.
+5. Paper chromatography: Separates mixtures of soluble substances based on solubility
+   in solvent and adsorption onto stationary phase.
+   - Rf = distance travelled by substance ÷ distance travelled by solvent front.
+   - Pure substance: Single spot. Mixture: Multiple spots.
+6. Solvent extraction: Separates substances based on differential solubility in two
+   immiscible solvents.
+
+Tests for gases:
+- Hydrogen (H₂): Burning splint → "squeaky pop".
+- Oxygen (O₂): Glowing splint → relights.
+- Carbon dioxide (CO₂): Limewater → turns milky/cloudy (Ca(OH)₂ + CO₂ → CaCO₃ + H₂O).
+- Chlorine (Cl₂): Damp litmus paper → bleaches/turns white.
+- Ammonia (NH₃): Damp red litmus paper → turns blue; white fumes with HCl.
+- Sulphur dioxide (SO₂): Acidified KMnO₄ → decolourises; turns damp dichromate paper green.
+- Water vapour (H₂O): Anhydrous CuSO₄ (white → blue) or anhydrous CoCl₂ paper (blue → pink).
+
+Tests for ions:
+Cations:
+- NH₄⁺: Add NaOH, warm → pungent gas (NH₃) that turns damp red litmus blue.
+- Fe²⁺: Add NaOH → dirty green precipitate. Add KMnO₄ (acidified) → decolourises.
+- Fe³⁺: Add NaOH → reddish-brown precipitate.
+- Cu²⁺: Add NaOH → pale blue precipitate. Flame test → blue-green flame.
+- Al³⁺: Add NaOH → white precipitate, soluble in excess NaOH (amphoteric).
+- Ca²⁺: Add NaOH → white precipitate, insoluble in excess. Flame test → brick-red flame.
+- Pb²⁺: Add NaOH → white precipitate, soluble in excess NaOH.
+- Zn²⁺: Add NaOH → white precipitate, soluble in excess NaOH.
+- Na⁺: Flame test → yellow/orange flame.
+- K⁺: Flame test → lilac/purple flame.
+- Li⁺: Flame test → crimson/red flame.
+
+Anions:
+- Cl⁻: Add dilute HNO₃, then AgNO₃ → white precipitate (AgCl), insoluble in dilute NH₃.
+- Br⁻: Add dilute HNO₃, then AgNO₃ → cream precipitate (AgBr), soluble in conc. NH₃.
+- I⁻: Add dilute HNO₃, then AgNO₃ → yellow precipitate (AgI), insoluble in conc. NH₃.
+- SO₄²⁻: Add dilute HCl, then BaCl₂ → white precipitate (BaSO₄), insoluble in dilute HCl.
+- CO₃²⁻: Add dilute HCl → effervescence, CO₂ gas produced (turns limewater milky).
+- NO₃⁻: Add NaOH and aluminium foil, warm → NH₃ gas produced (turns damp red litmus blue).
+- OH⁻: Add universal indicator → purple/dark blue. Turns damp red litmus blue.
+
+Volumetric analysis (titration):
+- Used to find concentration of an unknown solution.
+- Acid-base titration: Acid in burette, alkali in conical flask (or vice versa) with indicator.
+- Common indicators: Methyl orange (red in acid, yellow in alkali), phenolphthalein
+  (colourless in acid, pink in alkali), litmus (red in acid, blue in alkali).
+- Calculations:
+  Moles = Concentration (mol/dm³) × Volume (dm³)
+  At equivalence point: Moles of acid × n = Moles of base × m (from balanced equation)
+
+=== CALCULATIONS SUMMARY ===
+
+Molar mass (Mr): Sum of relative atomic masses of all atoms in formula.
+Moles (n) = Mass (g) ÷ Molar mass (g/mol)
+Mass = Moles × Molar mass
+Molar volume of gas at r.t.p. (room temperature and pressure): 24 dm³/mol (24,000 cm³/mol)
+Moles of gas = Volume (dm³) ÷ 24
+Concentration (mol/dm³) = Moles ÷ Volume (dm³)
+Moles = Concentration × Volume (dm³)
+
+Percentage composition = (Mass of element ÷ Mr of compound) × 100%
+Empirical formula: Simplest whole number ratio of atoms.
+Molecular formula: Actual number of atoms; multiple of empirical formula.
+
+Percentage yield = (Actual yield ÷ Theoretical yield) × 100%
+Percentage purity = (Mass of pure substance ÷ Mass of impure sample) × 100%
+
+Avogadro's number: 6.02 × 10²³ particles per mole.
+Number of particles = Moles × 6.02 × 10²³
+
+=== END OF NOTES ===
